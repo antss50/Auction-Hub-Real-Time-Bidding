@@ -1,19 +1,20 @@
 import { Loader2, Save, Upload, X } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { UploadService } from '../../services/upload.service';
+import { LocationService } from '../../services/location.service';
 
 interface Props {
   isOpen: boolean;
   onClose: () => void;
-  onSubmit: (data: any) => Promise<boolean>; // Hàm submit trả về Promise boolean
-  initialData?: any; // Dữ liệu để edit
+  onSubmit: (data: any) => Promise<boolean>; 
+  initialData?: any; 
 }
 
 export const AuctionFormModal = ({ isOpen, onClose, onSubmit, initialData }: Props) => {
   const [formData, setFormData] = useState({
     code: '',
     name: '',
-    assetType: 'secured_asset', // Giá trị mặc định
+    assetType: 'secured_asset', 
     assetAddress: '',
     assetDescription: '',
     saleStartAt: '',
@@ -38,13 +39,44 @@ export const AuctionFormModal = ({ isOpen, onClose, onSubmit, initialData }: Pro
     images: [] as { publicId: string | null; url: string }[]
   });
 
+
+  const [locations, setLocations] = useState<any[]>([]); 
+  const [availableWards, setAvailableWards] = useState<any[]>([]);
+
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
-  // Khi mở modal lên để sửa, fill dữ liệu cũ vào
+  
+  useEffect(() => {
+    if (isOpen) {
+        const fetchLocations = async () => {
+            try {
+                const data = await LocationService.getAll();
+                if (Array.isArray(data)) {
+                    setLocations(data);
+                } else {
+                    console.error("Dữ liệu locations không phải là mảng:", data);
+                    setLocations([]);
+                }
+                
+                // Nếu đang Edit và đã có ProvinceId -> Fill lại danh sách Ward tương ứng
+                if (initialData && initialData.assetProvinceId) {
+                    const selectedProvince = data.find((p: any) => p.id === initialData.assetProvinceId);
+                    if (selectedProvince) {
+                        setAvailableWards(selectedProvince.ward || []);
+                    }
+                }
+            } catch (error) {
+                console.error("Lỗi tải địa điểm:", error);
+            }
+        };
+        fetchLocations();
+    }
+  }, [isOpen, initialData]);
+
   useEffect(() => {
     if (isOpen && initialData) {
       setFormData({
-         code: initialData.code || '',
+        code: initialData.code || '',
         name: initialData.name || '',
         assetType: initialData.assetType || 'secured_asset',
         assetAddress: initialData.assetAddress || '',
@@ -81,6 +113,26 @@ export const AuctionFormModal = ({ isOpen, onClose, onSubmit, initialData }: Pro
     } 
   }, [initialData, isOpen]);
 
+  const handleProvinceChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const provinceId = Number(e.target.value);
+    
+    // Cập nhật State Form
+    setFormData(prev => ({
+        ...prev,
+        assetProvinceId: provinceId,
+        assetWardId: 1
+    }));
+
+    // Tìm Tỉnh đã chọn để lấy danh sách Ward con
+    const selectedProvince = locations.find(p => p.id === provinceId);
+    setAvailableWards(selectedProvince ? selectedProvince.ward : []);
+  };
+
+  // --- XỬ LÝ CHỌN PHƯỜNG/XÃ ---
+  const handleWardChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setFormData(prev => ({ ...prev, assetWardId: Number(e.target.value) }));
+  };
+
   const resetForm = () => {
     setFormData(prev => ({ ...prev, images: [] }));
   };
@@ -104,16 +156,14 @@ export const AuctionFormModal = ({ isOpen, onClose, onSubmit, initialData }: Pro
     setIsUploading(true);
 
     try {
-      // Gọi Service upload
       const uploadedFiles = await UploadService.uploadFiles(files);
       
-      // API trả về mảng các file đã upload. Map nó về đúng cấu trúc { publicId, url }
       const newImages = uploadedFiles.map((file: any) => ({
-        publicId: file.publicId || null, // Backend có thể trả về publicId hoặc id
+        publicId: file.publicId || null, 
         url: file.url 
       }));
 
-      // Cập nhật state (Gộp ảnh cũ + ảnh mới)
+      
       setFormData(prev => ({
         ...prev,
         images: [...prev.images, ...newImages]
@@ -123,7 +173,7 @@ export const AuctionFormModal = ({ isOpen, onClose, onSubmit, initialData }: Pro
       alert("Lỗi tải ảnh lên!");
     } finally {
       setIsUploading(false);
-      // Reset input file để user có thể chọn lại file cũ nếu muốn
+      
       e.target.value = '';
     }
   };
@@ -162,7 +212,7 @@ export const AuctionFormModal = ({ isOpen, onClose, onSubmit, initialData }: Pro
       assetProvinceId: Number(formData.assetProvinceId),
       viewTime: formData.viewTime,
 
-      // Arrays (Mock tạm thời, sau này cần component Upload file)
+      
       images: formData.images.length > 0 ? formData.images : [],
       attachments: [],
 
@@ -176,6 +226,7 @@ export const AuctionFormModal = ({ isOpen, onClose, onSubmit, initialData }: Pro
     };
 
     const success = await onSubmit(payload);
+    console.log("Submit result:", payload);
     setIsSubmitting(false);
     if (success) {
         resetForm();
@@ -355,6 +406,58 @@ export const AuctionFormModal = ({ isOpen, onClose, onSubmit, initialData }: Pro
               <input type="text" className="w-full border p-2 rounded"
                 value={formData.ownerOrg} onChange={e => setFormData({...formData, ownerOrg: e.target.value})} />
             </div>
+
+            <div className="md:col-span-2 border-b pb-2 mb-2 font-bold text-gray-700 mt-4">Thông tin địa điểm</div>
+
+                {/* 1. Chọn Tỉnh/Thành phố */}
+                <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Tỉnh / Thành phố <span className="text-red-500">*</span></label>
+                    <select 
+                        required
+                        className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-yellow-500 focus:border-yellow-500"
+                        value={formData.assetProvinceId}
+                        onChange={handleProvinceChange}
+                    >
+                        <option value={0}>-- Chọn Tỉnh/Thành --</option>
+                        {Array.isArray(locations) && locations.map((loc) => (
+                          <option key={loc.id} value={loc.id}>
+                             {loc.name}
+                          </option>
+                        ))}
+                    </select>
+                </div>
+
+                {/* 2. Chọn Phường/Xã */}
+                <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Phường / Xã <span className="text-red-500">*</span></label>
+                    <select 
+                        required
+                        className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-yellow-500 focus:border-yellow-500 disabled:bg-gray-100"
+                        value={formData.assetWardId}
+                        onChange={handleWardChange}
+                        disabled={formData.assetProvinceId === 0} // Chỉ cho chọn khi đã chọn Tỉnh
+                    >
+                        <option value={0}>-- Chọn Phường/Xã --</option>
+                        {availableWards.map((ward) => (
+                            <option key={ward.id} value={ward.id}>
+                                {ward.name}
+                            </option>
+                        ))}
+                    </select>
+                </div>
+
+                {/* 3. Địa chỉ chi tiết (Input text cũ) */}
+                <div className="md:col-span-2">
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Địa chỉ chi tiết (Số nhà, đường...)</label>
+                    <input 
+                        type="text" 
+                        required 
+                        className="w-full border p-2 rounded"
+                        value={formData.assetAddress} 
+                        onChange={e => setFormData({...formData, assetAddress: e.target.value})} 
+                        placeholder="VD: 123 Đường Nguyễn Huệ..."
+                    />
+                </div>
 
           </div>
         </form>

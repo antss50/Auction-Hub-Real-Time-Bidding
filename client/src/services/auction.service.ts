@@ -13,6 +13,11 @@ export const AuctionService = {
     return res.data;
   },
 
+  getOne: async (id: string) => {
+    const res = await apiClient.get(`/api/auctions/${id}`);
+    return res.data; 
+  },
+
   // Cập nhật
   update: async (id: string, data: any) => {
     const res = await apiClient.put(`/api/auctions/${id}`, data);

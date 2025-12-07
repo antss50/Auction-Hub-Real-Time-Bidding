@@ -18,7 +18,7 @@ const nextConfig = {
       //   protocol: 'http',
       //   hostname: 'localhost', // Domain ảnh bài viết (backend local)
       //   port: '3000',
-      //   pathname: '/assets/**',
+      //   pathname: '/**',
       // },
     ],
   },

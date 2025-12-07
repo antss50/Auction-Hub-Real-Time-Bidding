@@ -11,6 +11,13 @@ export const useAdminAuctions = () => {
   const [totalPages, setTotalPages] = useState(1);
   const [totalItems, setTotalItems] = useState(0);
 
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingItem, setEditingItem] = useState<any>(null);
+
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [itemToDeleteId, setItemToDeleteId] = useState<string | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+
   // Hàm load dữ liệu
   const fetchAuctions = useCallback(async () => {
     try {
@@ -70,6 +77,55 @@ export const useAdminAuctions = () => {
     }
   };
 
+  const getAuctionDetail = async (id: string) => {
+    try {
+      
+      const res = await AuctionService.getOne(id);
+      if (res.success) {
+        return res.data; 
+      }
+      return null;
+    } catch (error) {
+      console.error("Lỗi lấy chi tiết:", error);
+      return null;
+    }
+  };
+
+  const handleEditClick = async (item: any) => {
+    // Gọi API lấy thông tin chi tiết dựa trên ID
+    const fullDetail = await getAuctionDetail(item.id);
+    console.log("Chi tiết phiên đấu giá:", fullDetail);
+    if (fullDetail) {
+      setEditingItem(fullDetail); 
+      setIsModalOpen(true);      
+    } else {
+        console.error("Không thể lấy chi tiết phiên đấu giá.");
+    }
+  };
+
+  const handleCreateClick = () => {
+    setEditingItem(null); // Reset item sửa
+    setIsModalOpen(true);
+  };
+
+  const handleDeleteClick = (id: string) => {
+    setItemToDeleteId(id); // Lưu lại ID cần xoá
+    setIsDeleteModalOpen(true); 
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!itemToDeleteId) return;
+
+    setIsDeleting(true); 
+    const success = await deleteAuction(itemToDeleteId);
+    setIsDeleting(false);
+
+    if (success) {
+      setIsDeleteModalOpen(false);
+      setItemToDeleteId(null);
+    }
+  };
+
   return {
     auctions,
     loading,
@@ -77,6 +133,21 @@ export const useAdminAuctions = () => {
     deleteAuction,
     createAuction,
     updateAuction,
-    refreshData: () => setRefreshKey(prev => prev + 1)
+    refreshData: () => setRefreshKey(prev => prev + 1),
+    getAuctionDetail,
+    handleEditClick,
+    handleCreateClick,
+    handleDeleteClick,
+    handleConfirmDelete,
+    isModalOpen,
+    setIsModalOpen,
+    editingItem,
+    setEditingItem,
+    isDeleteModalOpen,
+    setIsDeleteModalOpen,
+    itemToDeleteId,
+    setItemToDeleteId,
+    isDeleting,
+    setIsDeleting,
   };
 };
