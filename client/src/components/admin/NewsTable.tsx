@@ -1,9 +1,10 @@
 import { Edit, Trash2, ChevronLeft, ChevronRight, Loader2 } from 'lucide-react';
 import Image from 'next/image';
 import { formatDate } from '../../app/utils/format'; 
+import { Article } from '../../types/article';
 
 interface Props {
-  data: any[];
+  data: Article[];
   loading: boolean;
   pagination: {
     page: number;
@@ -11,7 +12,7 @@ interface Props {
     totalItems: number;
     setPage: (page: number) => void;
   };
-  onEdit: (item: any) => void;
+  onEdit: (item: Article) => void;
   onDelete: (id: string) => void;
 }
 
@@ -36,7 +37,7 @@ export const NewsTable = ({ data, loading, pagination, onEdit, onDelete }: Props
             ) : data.length === 0 ? (
                 <tr><td colSpan={5} className="p-8 text-center text-gray-500">Không tìm thấy bài viết nào.</td></tr>
             ) : (
-                data.map((item: any) => (
+                data.map((item) => (
                     <tr key={item.id} className="hover:bg-gray-50 transition-colors">
                     <td className="px-6 py-4">
                         <div className="flex gap-3 items-center">

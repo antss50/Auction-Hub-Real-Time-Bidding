@@ -9,18 +9,28 @@ import { ConfirmDeleteModal } from '../../../components/ConfirmDeleteModal';
 import Sidebar from '../../../components/admin/Sidebar';
 
 export default function NewsManagementPage() {
-  const { newsList, loading, pagination, createNews, filters, setFilters, updateNews, deleteNews } = useAdminNews();
-
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [sidebarOpen, setSidebarOpen] = useState(true);
-  const [editingItem, setEditingItem] = useState<any>(null);
-
-  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-  const [deleteId, setDeleteId] = useState<string | null>(null);
-  const [isDeleting, setIsDeleting] = useState(false);
-
-  const handleCreate = () => { setEditingItem(null); setIsModalOpen(true); };
-  const handleEdit = (item: any) => { setEditingItem(item); setIsModalOpen(true); };
+  const { 
+    newsList, 
+    loading, 
+    pagination, 
+    createNews, 
+    filters,
+    isModalOpen,
+    setIsModalOpen,
+    sidebarOpen,
+    editingItem,
+    isDeleteModalOpen,
+    setIsDeleteModalOpen,
+    isDeleting,
+    setFilters, 
+    updateNews, 
+    handleCreateClick,
+    handleEditClick,
+    // handleSearchChange,
+    // handleTypeChange,
+    handleDeleteClick,
+    handleConfirmDelete
+  } = useAdminNews();
 
   const handleFormSubmit = async (formData: any) => {
     if (editingItem) {
@@ -28,35 +38,6 @@ export default function NewsManagementPage() {
     } else {
         return await createNews(formData);
     }
-  };
-
-  const handleDeleteClick = (id: string) => {
-    setDeleteId(id);
-    setIsDeleteModalOpen(true);
-  };
-
-  // Xác nhận xóa
-  const handleConfirmDelete = async () => {
-    if (!deleteId) return;
-    setIsDeleting(true);
-    const success = await deleteNews(deleteId);
-    setIsDeleting(false);
-    if (success) {
-        setIsDeleteModalOpen(false);
-        setDeleteId(null);
-    }
-  };
-
-  // Xử lý tìm kiếm (Debounce đơn giản)
-  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    // Reset về trang 1 khi tìm kiếm
-    pagination.setPage(1); 
-    setFilters((prev: any) => ({ ...prev, search: e.target.value }));
-  };
-
-  const handleTypeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    pagination.setPage(1);
-    setFilters((prev: any) => ({ ...prev, type: e.target.value }));
   };
 
   return (
@@ -70,7 +51,7 @@ export default function NewsManagementPage() {
             <h1 className="text-2xl font-bold text-gray-900">Quản lý Tin tức</h1>
             <p className="text-sm text-gray-500">Đăng tải và cập nhật các bản tin, thông báo đấu giá</p>
           </div>
-          <button onClick={handleCreate} className="flex gap-2 bg-[#FFC107] hover:bg-yellow-500 text-black px-4 py-2 rounded font-medium shadow-sm">
+          <button onClick={handleCreateClick} className="flex gap-2 bg-[#FFC107] hover:bg-yellow-500 text-black px-4 py-2 rounded font-medium shadow-sm">
             <Plus size={18} /> Viết bài mới
           </button>
         </div>
@@ -93,8 +74,8 @@ export default function NewsManagementPage() {
             data={newsList} 
             loading={loading} 
             pagination={pagination}
-            onEdit={handleEdit} 
-            onDelete={deleteNews} 
+            onEdit={handleEditClick} 
+            onDelete={handleDeleteClick} 
         />
 
         {/* --- MODAL --- */}
@@ -104,6 +85,15 @@ export default function NewsManagementPage() {
             onSubmit={handleFormSubmit} 
             initialData={editingItem}
         />
+
+        <ConfirmDeleteModal 
+                isOpen={isDeleteModalOpen}
+                onClose={() => setIsDeleteModalOpen(false)}
+                onConfirm={handleConfirmDelete}
+                isDeleting={isDeleting}
+                title="Xóa bài viết?"
+                message="Bạn có chắc chắn muốn xóa bài viết này không? Dữ liệu sẽ không thể khôi phục."
+            />
       </main>
     </div>
   );

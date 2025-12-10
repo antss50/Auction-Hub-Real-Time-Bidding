@@ -55,7 +55,7 @@ export const useAdminAuctions = () => {
     }
   };
 
-  const createAuction = async (data: any) => {
+  const createAuction = async (data: AuctionItem) => {
     try {
       await AuctionService.create(data);
       setRefreshKey(prev => prev + 1);
@@ -66,7 +66,7 @@ export const useAdminAuctions = () => {
     }
   };
 
-  const updateAuction = async (id: string, data: any) => {
+  const updateAuction = async (id: string, data: AuctionItem) => {
     try {
       await AuctionService.update(id, data);
       setRefreshKey(prev => prev + 1);
@@ -91,7 +91,7 @@ export const useAdminAuctions = () => {
     }
   };
 
-  const handleEditClick = async (item: any) => {
+  const handleEditClick = async (item: AuctionItem) => {
     // Gọi API lấy thông tin chi tiết dựa trên ID
     const fullDetail = await getAuctionDetail(item.id);
     console.log("Chi tiết phiên đấu giá:", fullDetail);

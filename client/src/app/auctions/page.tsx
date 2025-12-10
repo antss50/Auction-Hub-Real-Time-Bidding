@@ -12,7 +12,7 @@ import Link from "next/link";
 import { Home } from "lucide-react";
 import AuctionFilter from "../../components/AuctionFilter";
 import axios from "axios";
-
+import { getImageUrl } from "../utils/format";
 const PAGE_SIZE = 12;
 
 function AuctionsContent() {
@@ -30,11 +30,6 @@ function AuctionsContent() {
 
   const [priceRange, setPriceRange] = useState<[number, number]>([0, 9999999999999]);
 
-  const getRandomImage = (id: string) => {
-    const images = ["/images/auction-logo.jpg", "/images/auction-logo.jpg"];
-    return images[id.charCodeAt(id.length - 1) % images.length];
-  };
-
   const mapAuction = (item: ApiAuctionItem): AuctionItem => ({
     id: item.id,
     name: item.name,
@@ -48,7 +43,7 @@ function AuctionsContent() {
       hour: "2-digit",
       minute: "2-digit",
     }),
-    image: getRandomImage(item.id),
+    image: getImageUrl(item.images),
     location: "TP Hồ Chí Minh",
     status: statusParam!,
   });
@@ -67,10 +62,12 @@ function AuctionsContent() {
       const res = await axios.get("/api/auctions", { params });
 
       if (res.data?.success) {
+        setTotalPages(res.data.meta?.totalPages || 1);
         const raw: ApiAuctionItem[] = res.data.data || [];
 
         setAuctions(raw.map(mapAuction));
-        setTotalPages(res.data.meta?.totalPages || 1);
+        
+
       }
     } catch (err) {
       console.error("Fetch auctions error:", err);

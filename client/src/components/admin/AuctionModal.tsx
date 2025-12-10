@@ -26,17 +26,17 @@ export const AuctionFormModal = ({ isOpen, onClose, onSubmit, initialData }: Pro
     bidIncrement: 0,
     depositAmountRequired: 0,
     saleFee: 0,
-    viewTime: 'Trong giờ hành chính',
+    viewTime: '',
     validCheckInBeforeStartMinutes: 30, 
     validCheckInAfterStartMinutes: 15,  
-    assetWardId: 1, 
-    assetProvinceId: 1, 
+    assetWardId: 0, 
+    assetProvinceId: 0, 
     // Nested Object: Property Owner
     ownerName: '',
     ownerEmail: '',
     ownerPhone: '',
     ownerOrg: '',
-    images: [] as { publicId: string | null; url: string }[]
+    images: [] as { publicId:string | null; url: string }[]
   });
 
 
@@ -93,11 +93,11 @@ export const AuctionFormModal = ({ isOpen, onClose, onSubmit, initialData }: Pro
         bidIncrement: initialData.bidIncrement || 0,
         depositAmountRequired: initialData.depositAmountRequired || 0,
         saleFee: initialData.saleFee || 0,
-        viewTime: initialData.viewTime || '',
+        viewTime: initialData.viewTime || Date.now().toString(),
         validCheckInBeforeStartMinutes: initialData.validCheckInBeforeStartMinutes || 30,
         validCheckInAfterStartMinutes: initialData.validCheckInAfterStartMinutes || 15,
-        assetWardId: initialData.assetWardId || 1,
-        assetProvinceId: initialData.assetProvinceId || 1,
+        assetWardId: initialData.assetWardId || 0,
+        assetProvinceId: initialData.assetProvinceId || 0,
 
         // Flatten propertyOwner để dễ bind vào input
         ownerName: initialData.propertyOwner?.name || '',
@@ -105,7 +105,10 @@ export const AuctionFormModal = ({ isOpen, onClose, onSubmit, initialData }: Pro
         ownerPhone: initialData.propertyOwner?.phone || '',
         ownerOrg: initialData.propertyOwner?.organization || '',
 
-        images: initialData.images || []
+        images: initialData.images?.map((img: any) => ({
+          publicId: img.publicId || null, 
+          url: img.url
+        })) || []
       });
     } else if (isOpen && !initialData) {
        // Reset form nếu là tạo mới
@@ -116,21 +119,20 @@ export const AuctionFormModal = ({ isOpen, onClose, onSubmit, initialData }: Pro
   const handleProvinceChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const provinceId = Number(e.target.value);
     
+    const selectedProvince = locations.find(p => p.id === provinceId);
+    setAvailableWards(selectedProvince ? selectedProvince.ward : []);
     // Cập nhật State Form
     setFormData(prev => ({
         ...prev,
         assetProvinceId: provinceId,
-        assetWardId: 1
+        assetWardId: 0 
     }));
-
-    // Tìm Tỉnh đã chọn để lấy danh sách Ward con
-    const selectedProvince = locations.find(p => p.id === provinceId);
-    setAvailableWards(selectedProvince ? selectedProvince.ward : []);
   };
 
   // --- XỬ LÝ CHỌN PHƯỜNG/XÃ ---
   const handleWardChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    setFormData(prev => ({ ...prev, assetWardId: Number(e.target.value) }));
+    const wardId = Number(e.target.value);
+    setFormData(prev => ({ ...prev, assetWardId: wardId }));
   };
 
   const resetForm = () => {
@@ -159,11 +161,11 @@ export const AuctionFormModal = ({ isOpen, onClose, onSubmit, initialData }: Pro
       const uploadedFiles = await UploadService.uploadFiles(files);
       
       const newImages = uploadedFiles.map((file: any) => ({
-        publicId: file.publicId || null, 
+        publicId: file.publicId || file.url || "temp-id-" + Date.now(), 
         url: file.url 
       }));
 
-      
+      console.log("Uploaded images:", newImages);
       setFormData(prev => ({
         ...prev,
         images: [...prev.images, ...newImages]
@@ -206,12 +208,11 @@ export const AuctionFormModal = ({ isOpen, onClose, onSubmit, initialData }: Pro
       bidIncrement: Number(formData.bidIncrement),
       depositAmountRequired: Number(formData.depositAmountRequired),
       saleFee: Number(formData.saleFee),
+      viewTime: Date.now().toString(),
       validCheckInBeforeStartMinutes: Number(formData.validCheckInBeforeStartMinutes),
       validCheckInAfterStartMinutes: Number(formData.validCheckInAfterStartMinutes),
       assetWardId: Number(formData.assetWardId),
       assetProvinceId: Number(formData.assetProvinceId),
-      viewTime: formData.viewTime,
-
       
       images: formData.images.length > 0 ? formData.images : [],
       attachments: [],

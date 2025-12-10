@@ -14,15 +14,14 @@ export const formatDate = (dateString: string) => {
 export const getImageUrl = (imgData: any): string => {
   if (!imgData) return "/images/auction-logo.jpg";
 
-  if (Array.isArray(imgData)) {
-    if (imgData.length > 0) {
-      if (typeof imgData[0] === 'object' && imgData[0]?.url) {
+  if (Array.isArray(imgData) && imgData.length > 0) {
+      if (imgData[0]?.url) {
         return imgData[0].url;
       }
       if (typeof imgData[0] === 'string') {
         return imgData[0];
       }
-    }
+    
     return "/images/auction-logo.jpg";
   }
 

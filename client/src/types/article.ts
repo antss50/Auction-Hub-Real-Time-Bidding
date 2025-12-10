@@ -4,6 +4,6 @@ export interface Article {
     description: string;
     type: string;
     author: string;
-    image: string;
+    image: string,
     createdAt: string;
 }

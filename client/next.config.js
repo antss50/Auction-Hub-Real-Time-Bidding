@@ -14,12 +14,24 @@ const nextConfig = {
         hostname: 'storage.daugiavietnam.com', // Domain ảnh đấu giá
         pathname: '/**',
       },
-      // {
-      //   protocol: 'http',
-      //   hostname: 'localhost', // Domain ảnh bài viết (backend local)
-      //   port: '3000',
-      //   pathname: '/**',
-      // },
+      {
+        protocol: 'http',
+        hostname: 'localhost', // Domain ảnh bài viết (backend local)
+        port: '3000',
+        pathname: '/**',
+      },
+      {
+        protocol: 'http', // Lỗi của bạn đang báo là http
+        hostname: 'res.cloudinary.com',
+        port: '',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https', // Thêm luôn https cho chắc chắn
+        hostname: 'res.cloudinary.com',
+        port: '',
+        pathname: '/**',
+      },
     ],
   },
   async rewrites() {

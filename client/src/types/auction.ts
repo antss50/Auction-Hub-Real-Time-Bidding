@@ -15,7 +15,7 @@ export interface AuctionItem {
   startingPrice: number;       
   deposit: number;             
   time: string;                
-  image: string;               
+  image: string;
   status?: "now" | "upcoming" | "completed"; 
   location: string;            
 }

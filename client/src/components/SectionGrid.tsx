@@ -1,14 +1,14 @@
 import { AuctionItem } from "../types/auction";
-import { ApiArticleItem } from "../types/article";
+import { Article } from "../types/article";
 import { AuctionCard } from "./cards/AuctionCard";
 import { ArticleCard } from "./cards/ArticleCard";
 
 type SectionGridProps = {
-  items: (AuctionItem | ApiArticleItem)[];
+  items: (AuctionItem | Article)[];
 };
 
 // Type Guard
-function isAuctionItem(item: AuctionItem | ApiArticleItem): item is AuctionItem {
+function isAuctionItem(item: AuctionItem | Article): item is AuctionItem {
   return (item as AuctionItem).startingPrice !== undefined;
 }
 

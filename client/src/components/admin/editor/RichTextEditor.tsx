@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import Image from '@tiptap/extension-image';
@@ -11,6 +11,8 @@ interface Props {
 }
 
 const RichTextEditor = ({ value, onChange }: Props) => {
+  const valueRef = useRef(value);
+
   const editor = useEditor({
     extensions: [
       StarterKit,
@@ -33,16 +35,26 @@ const RichTextEditor = ({ value, onChange }: Props) => {
     },
     onUpdate: ({ editor }) => {
       // Khi nội dung thay đổi, gửi HTML về form cha
-      onChange(editor.getHTML());
+      const html = editor.getHTML();
+
+      if (html !== valueRef.current) {
+        onChange(html);
+      }
     },
     immediatelyRender: false,
   });
 
   useEffect(() => {
-    if (editor && value && editor.getHTML() !== value) {
-        if (editor.getText() === '') {
-             editor.commands.setContent(value);
-        }
+    valueRef.current = value;
+  }, [value]);
+
+  useEffect(() => {
+    if (editor && value !== undefined && editor.getHTML() !== value) {
+      queueMicrotask(() => {
+          const { from, to } = editor.state.selection;
+          editor.commands.setContent(value, { emitUpdate: false });
+          editor.commands.setTextSelection({ from, to });
+      });
     }
   }, [value, editor]);
 

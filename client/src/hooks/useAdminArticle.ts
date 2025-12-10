@@ -12,33 +12,42 @@ export const useAdminNews = () => {
   const [totalPages, setTotalPages] = useState(1);
   const [totalItems, setTotalItems] = useState(0);
 
+  // --- MODAL & EDITING ITEM ---
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [editingItem, setEditingItem] = useState<any>(null);
+
+  // --- XÓA ---
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+
   const [filters, setFilters] = useState({
     search: '',
     type: 'all || news || article_notice || auction_report || legal_document'
   });
 
-  // --- 1. FETCH DATA ---
+  // --- FETCH DATA ---
   const fetchNews = useCallback(async () => {
     try {
       setLoading(true);
-      const params = await NewsService.getAll({ 
+      const data = await NewsService.getAll({ 
         page: page, 
         limit: 10, 
         sortOrder: 'desc',
-        sortBy: 'createdAt' // Tin tức thường sort theo ngày tạo
+        sortBy: 'createdAt' 
       });
 
-      if (filters.search) params.title = filters.search; // Backend lọc theo title
-      // Nếu type khác 'all' thì thêm vào params
-      if (filters.type !== 'all') params.type = filters.type;
+      // if (filters.search) params.title = filters.search; 
+      // if (filters.type !== 'all') params.type = filters.type;
 
-      const res = await NewsService.getAll(params);
+      // const res = await NewsService.getAll(params);
 
-      if (res.success) {
-        setNewsList(res.data);
-        if (res.meta) {
-            setTotalPages(res.meta.totalPages);
-            setTotalItems(res.meta.total);
+      if (data.success) {
+        setNewsList(data.data);
+        if (data.meta) {
+            setTotalPages(data.meta.totalPages);
+            setTotalItems(data.meta.total);
         }
       }
     } catch (error) {
@@ -46,13 +55,13 @@ export const useAdminNews = () => {
     } finally {
       setLoading(false);
     }
-  }, [refreshKey, page, filters]);
+  }, [refreshKey, page]);
 
   useEffect(() => {
     fetchNews();
   }, [fetchNews]);
 
-  // --- 2. GET DETAIL (Cho Edit) ---
+  // --- GET DETAIL (Cho Edit) ---
   const getNewsDetail = async (id: string) => {
     try {
       const res = await NewsService.getOne(id);
@@ -64,7 +73,7 @@ export const useAdminNews = () => {
     }
   };
 
-  // --- 3. CRUD ACTIONS ---
+  // --- CRUD ACTIONS ---
   const deleteNews = async (id: string) => {
     try {
       await NewsService.delete(id);
@@ -76,7 +85,7 @@ export const useAdminNews = () => {
     }
   };
 
-  const createNews = async (data: any) => {
+  const createNews = async (data: Article) => {
     try {
       await NewsService.create(data);
       setRefreshKey(prev => prev + 1);
@@ -87,7 +96,7 @@ export const useAdminNews = () => {
     }
   };
 
-  const updateNews = async (id: string, data: any) => {
+  const updateNews = async (id: string, data: Article) => {
     try {
       await NewsService.update(id, data);
       setRefreshKey(prev => prev + 1);
@@ -98,17 +107,72 @@ export const useAdminNews = () => {
     }
   };
 
+  const handleCreateClick = () => { 
+    setEditingItem(null); setIsModalOpen(true); 
+  };
+
+  const handleEditClick = (item: Article) => { 
+    setEditingItem(item); setIsModalOpen(true); 
+  };
+
+  const handleDeleteClick = (id: string) => {
+    setDeleteId(id);
+    setIsDeleteModalOpen(true);
+  };
+
+  // Xác nhận xóa
+  const handleConfirmDelete = async () => {
+    if (!deleteId) return;
+    setIsDeleting(true);
+    const success = await deleteNews(deleteId);
+    setIsDeleting(false);
+    if (success) {
+        setIsDeleteModalOpen(false);
+        setDeleteId(null);
+    }
+  };
+
+  // Xử lý tìm kiếm (Debounce đơn giản)
+  // const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  //   // Reset về trang 1 khi tìm kiếm
+  //   pagination.setPage(1); 
+  //   setFilters((prev: any) => ({ ...prev, search: e.target.value }));
+  // };
+
+  // const handleTypeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+  //   pagination.setPage(1);
+  //   setFilters((prev: any) => ({ ...prev, type: e.target.value }));
+  // };
+
   // --- RETURN ---
   return {
     newsList,
     loading,
     pagination: { page, totalPages, totalItems, setPage },
     filters,
+    isModalOpen,
+    setIsModalOpen,
+    sidebarOpen,
+    setSidebarOpen,
+    editingItem,
+    setEditingItem,
+    isDeleteModalOpen,
+    setIsDeleteModalOpen,
+    deleteId,
+    setDeleteId,
+    isDeleting,
+    setIsDeleting,
     setFilters,
     getNewsDetail,
     deleteNews,
     createNews,
     updateNews,
+    handleCreateClick,
+    handleEditClick,
+    handleDeleteClick,
+    // handleSearchChange,
+    // handleTypeChange,
+    handleConfirmDelete,
     refreshData: () => setRefreshKey(prev => prev + 1)
   };
 };

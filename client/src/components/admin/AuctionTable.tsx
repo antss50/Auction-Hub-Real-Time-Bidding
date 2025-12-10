@@ -1,7 +1,8 @@
 import React from 'react';
 import { Edit, Trash2, Loader2, ChevronRight, ChevronLeft } from 'lucide-react';
 import { AuctionItem } from '../../types/auction'; 
-import { formatCurrency } from '../../app/utils/format'; 
+import { formatCurrency, getImageUrl } from '../../app/utils/format'; 
+import Image from 'next/image';
 
 interface Props {
   auctions: AuctionItem[];
@@ -18,6 +19,7 @@ interface Props {
 
 export const AuctionsTable = ({ auctions, loading, onEdit, onDelete, pagination }: Props) => {
   const { page, totalPages, totalItems, setPage } = pagination;
+  console.log ('AuctionsTable render with auctions:', auctions.map(a => a.image));
   return (
     <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
       <div className="px-6 py-4 border-b border-gray-100 flex justify-between items-center">
@@ -62,8 +64,13 @@ export const AuctionsTable = ({ auctions, loading, onEdit, onDelete, pagination 
                 <tr key={item.id} className="hover:bg-gray-50 transition-colors duration-150">
                   {/* Cột Tên */}
                   <td className="px-6 py-4">
-                    <div className="font-medium text-gray-800 line-clamp-1" title={item.name}>
+                    <div className="flex gap-3 items-center">
+                      <div className="relative w-16 h-12 rounded overflow-hidden flex-shrink-0 bg-gray-100 border">
+                       <Image src={getImageUrl(item.images) || '/placeholder.jpg'} alt="" fill className="object-cover" />
+                      </div>                                                    
+                      <div className="font-medium text-gray-800 line-clamp-1" title={item.name}>
                         {item.name}
+                      </div>
                     </div>
                     <div className="text-xs text-gray-400 mt-1">{item.id}</div>
                   </td>
@@ -127,30 +134,6 @@ export const AuctionsTable = ({ auctions, loading, onEdit, onDelete, pagination 
             >
                 <ChevronLeft size={16} />
             </button>
-            
-            {/* Logic render số trang đơn giản */}
-            {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-                // Logic hiển thị trang thông minh hơn (như 1 2 ... 9 10) có thể thêm sau
-                // Ở đây hiển thị đơn giản 5 trang đầu hoặc sliding window
-                let p = i + 1;
-                if (page > 3 && totalPages > 5) p = page - 2 + i;
-                if (p > totalPages) return null;
-
-                return (
-                    <button
-                        key={p}
-                        onClick={() => setPage(p)}
-                        className={`w-8 h-8 rounded text-sm font-medium transition-colors ${
-                            page === p 
-                            ? "bg-[#FFC107] text-black border border-yellow-500" 
-                            : "bg-white border border-gray-200 text-gray-600 hover:bg-gray-100"
-                        }`}
-                    >
-                        {p}
-                    </button>
-                )
-            })}
-
             <button 
                 onClick={() => setPage(page + 1)} 
                 disabled={page === totalPages}
@@ -165,7 +148,7 @@ export const AuctionsTable = ({ auctions, loading, onEdit, onDelete, pagination 
   );
 };
 
-// --- SUB COMPONENT: Status Badge (Có thể tách ra file riêng nếu muốn) ---
+// --- SUB COMPONENT: Status Badge ---
 const StatusBadge = ({ status }: { status: string }) => {
   switch (status) {
     case 'active':

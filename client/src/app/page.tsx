@@ -10,7 +10,7 @@ import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import { AuctionItem, ApiAuctionItem, AuctionResponse } from "../types/auction";
 import apiClient from "axios";
-import { ApiArticleItem } from "../types/article";
+import { Article } from "../types/article";
 import { formatCurrency, getImageUrl } from "./utils/format";
 
 export default function HomePage() {
@@ -21,7 +21,7 @@ export default function HomePage() {
     upcoming: [],
     past: [],
   });
-  const [articles, setArticles] = useState<ApiArticleItem[]>([]);
+  const [articles, setArticles] = useState<Article[]>([]);
 
   const mapAuction = (item: ApiAuctionItem): AuctionItem => {
     const start = new Date(item.auctionStartAt);

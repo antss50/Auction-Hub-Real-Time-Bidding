@@ -1,5 +1,5 @@
 import {Gavel, LayoutDashboard, LogOut, Settings, Users } from 'lucide-react';
-
+import { usePathname } from "next/navigation";
 
 export default function Sidebar({ sidebarOpen }: { sidebarOpen: boolean }) {
     return (
@@ -11,10 +11,10 @@ export default function Sidebar({ sidebarOpen }: { sidebarOpen: boolean }) {
 
         {/* Navigation */}
         <nav className="flex-1 py-6 space-y-1 px-3">
-            <NavItem icon={<LayoutDashboard size={20} />} label="Trang chủ" isOpen={sidebarOpen} />
-            <NavItem icon={<Gavel size={20} />} label="Quản lý Đấu giá" isOpen={sidebarOpen} active />
-            <NavItem icon={<Users size={20} />} label="Tin tức" isOpen={sidebarOpen} />
-            <NavItem icon={<Settings size={20} />} label="Cài đặt hệ thống" isOpen={sidebarOpen} />
+            <NavItem href = "/dashboard" icon={<LayoutDashboard size={20} />} label="Trang chủ" isOpen={sidebarOpen}  className = "active:bg-[#FFC107]" />
+            <NavItem href = "/admin/auctions" icon={<Gavel size={20} />} label="Quản lý Đấu giá" isOpen={sidebarOpen} className = "active:bg-[#FFC107]" />
+            <NavItem href = "/admin/articles" icon={<Users size={20} />} label="Tin tức" isOpen={sidebarOpen} className = "active:bg-[#FFC107]" />
+            <NavItem icon={<Settings size={20} />} label="Cài đặt hệ thống" isOpen={sidebarOpen} className = "active:bg-[#FFC107]" />
         </nav>
 
         {/* Footer Sidebar */}
@@ -26,9 +26,21 @@ export default function Sidebar({ sidebarOpen }: { sidebarOpen: boolean }) {
 </aside>
     );
 }
-const NavItem = ({ icon, label, isOpen, active }: any) => (
-    <div className={`flex items-center gap-3 px-3 py-3 rounded-lg cursor-pointer transition-colors ${active ? 'bg-[#FFC107] text-black font-semibold' : 'text-gray-400 hover:bg-gray-800 hover:text-white'}`}>
-        {icon}
-        {isOpen && <span className="text-sm">{label}</span>}
-    </div>
-);
+
+const NavItem = ({ href, icon, label, isOpen } : any) => {
+  const pathname = usePathname();
+  const isActive = pathname === href;
+
+  return (
+    <a
+      href={href}
+      className={`
+        flex items-center gap-3 px-3 py-3 rounded-lg cursor-pointer transition-colors
+        ${isActive ? "bg-[#FFC107] text-black" : "text-gray-400 hover:bg-gray-800 hover:text-white"}
+      `}
+    >
+      {icon}
+      {isOpen && <span className="text-sm">{label}</span>}
+    </a>
+  );
+};

@@ -1,10 +1,10 @@
 import Link from "next/link";
 import Image from "next/image";
-import { ApiArticleItem } from "../../types/article";
+import { Article } from "../../types/article";
 import { Calendar, FileText, User } from "lucide-react";
 import { formatDate, getImageUrl } from "../../app/utils/format";
 
-export const ArticleCard = ({ item }: { item: ApiArticleItem }) => {
+export const ArticleCard = ({ item }: { item: Article }) => {
   const imageUrl = getImageUrl(item.image);
 
   return (
