@@ -9,7 +9,7 @@ import Topbar from "../components/Topbar";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import { AuctionItem, ApiAuctionItem, AuctionResponse } from "../types/auction";
-import apiClient from "axios";
+import apiClient from '@auction-hub/axios';
 
 export default function HomePage() {
   const [loading, setLoading] = useState(true);
@@ -47,7 +47,7 @@ export default function HomePage() {
   };
 
   const fetchByStatus = async (status: "now" | "upcoming" | "completed") => {
-    const res = await apiClient.get("/api/auctions", {
+    const res = await apiClient.get("/auctions", {
       params: { status, limit: 8, page: 1 },
     });
 

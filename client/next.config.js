@@ -7,6 +7,10 @@ const { composePlugins, withNx } = require('@nx/next');
  * @type {import('@nx/next/plugins/with-nx').WithNxOptions}
  **/
 const nextConfig = {
+  images: {
+        // Khai báo tên miền chứa hình ảnh bên ngoài
+        domains: ['example.com'], 
+    },
   async rewrites() {
     return [
       {

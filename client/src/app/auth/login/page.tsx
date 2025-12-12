@@ -53,7 +53,7 @@ export default function LoginPage() {
 
       // Get user and token from returned data
       const loginData = response.data || response;
-      const { user, access_token } = (response.data as any).data;
+      const { user, access_token } = (response.data as any);
 
 
       if (!access_token || !user) {

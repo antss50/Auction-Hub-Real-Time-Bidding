@@ -27,27 +27,27 @@ function VerifyContent() {
         // Gọi API Backend để verify code này (Bạn cần implement API này ở backend nếu chưa có)
         // Hoặc nếu dùng Supabase client ở frontend:
         // await supabase.auth.exchangeCodeForSession(code)
-        
+
         // GIẢ SỬ: Bạn gọi Backend để verify (Backend gọi supabase.auth.exchangeCodeForSession)
         // Lưu ý: Code backend hiện tại của bạn đang dùng 'token', cần check lại logic Supabase PKCE
-        
+
         // Nếu backend chưa có route exchange code, bạn có thể xử lý tạm ở frontend bằng supabase-js
         // Nhưng tốt nhất là gọi API backend:
         await apiClient.post('/auth/verify-email', { token: code }); // Giả sử backend nhận 'token' là code
 
         setStatus("success");
         toast({ title: "Xác thực thành công!", className: "bg-green-500 text-white" });
-        
+
         // Chuyển hướng về trang login sau 2 giây
         setTimeout(() => router.push("/auth/login"), 2000);
 
       } catch (error) {
         console.error(error);
         setStatus("error");
-        toast({ 
-            title: "Xác thực thất bại", 
-            description: "Link đã hết hạn hoặc không hợp lệ.", 
-            variant: "destructive" 
+        toast({
+          title: "Xác thực thất bại",
+          description: "Link đã hết hạn hoặc không hợp lệ.",
+          variant: "destructive"
         });
       }
     };

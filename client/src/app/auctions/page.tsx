@@ -11,7 +11,7 @@ import SectionGrid from "../../components/SectionGrid";
 import Link from "next/link";
 import { Home } from "lucide-react";
 import AuctionFilter from "../../components/AuctionFilter";
-import axios from "axios";
+import apiClient from '@auction-hub/axios';
 
 const PAGE_SIZE = 12;
 
@@ -64,7 +64,7 @@ function AuctionsContent() {
 
       if (statusParam) params.status = statusParam;
 
-      const res = await axios.get("/api/auctions", { params });
+      const res = await apiClient.get("/auctions", { params });
 
       if (res.data?.success) {
         const raw: ApiAuctionItem[] = res.data.data || [];

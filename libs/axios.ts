@@ -2,9 +2,7 @@
 import axios, { AxiosError } from 'axios';
 import Cookies from 'js-cookie';
 
-const apiBaseUrl =
-  process.env.NEXT_PUBLIC_API_BASE_URL?.replace(/\/+$/, '') ||
-  'http://localhost:3000/api';
+const apiBaseUrl = 'http://localhost:3000/api';
 
 const apiClient = axios.create({
   baseURL: `${apiBaseUrl}`
