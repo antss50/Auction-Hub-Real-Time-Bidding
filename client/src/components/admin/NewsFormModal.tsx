@@ -27,7 +27,7 @@ export const NewsFormModal = ({ isOpen, onClose, onSubmit, initialData }: Props)
     content: '',     
     author: '',
     type: 'news',
-    image: null as NewsImage | null, // Chỉ lưu 1 object ảnh hoặc null
+    image: null as NewsImage | null, 
   });
 
   // --- 1. INITIALIZE DATA ---

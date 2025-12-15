@@ -12,7 +12,7 @@ export default function Sidebar({ sidebarOpen }: { sidebarOpen: boolean }) {
         {/* Navigation */}
         <nav className="flex-1 py-6 space-y-1 px-3">
             <NavItem href = "/dashboard" icon={<LayoutDashboard size={20} />} label="Trang chủ" isOpen={sidebarOpen}  className = "active:bg-[#FFC107]" />
-            <NavItem href = "/admin/auctions" icon={<Gavel size={20} />} label="Quản lý Đấu giá" isOpen={sidebarOpen} className = "active:bg-[#FFC107]" />
+            <NavItem href = "/admin/auctions" icon={<Gavel size={20} />} label="Quản lý Tài sản" isOpen={sidebarOpen} className = "active:bg-[#FFC107]" />
             <NavItem href = "/admin/articles" icon={<Users size={20} />} label="Tin tức" isOpen={sidebarOpen} className = "active:bg-[#FFC107]" />
             <NavItem icon={<Settings size={20} />} label="Cài đặt hệ thống" isOpen={sidebarOpen} className = "active:bg-[#FFC107]" />
         </nav>

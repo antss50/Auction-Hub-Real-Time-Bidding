@@ -321,11 +321,6 @@ export const AuctionFormModal = ({ isOpen, onClose, onSubmit, initialData }: Pro
                 value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} />
             </div>
             <div className="md:col-span-2">
-              <label className="block text-sm font-medium text-gray-700 mb-1">Địa chỉ tài sản</label>
-              <input type="text" required className="w-full border p-2 rounded"
-                value={formData.assetAddress} onChange={e => setFormData({...formData, assetAddress: e.target.value})} />
-            </div>
-            <div className="md:col-span-2">
               <label className="block text-sm font-medium text-gray-700 mb-1">Mô tả tài sản</label>
               <textarea rows={3} className="w-full border p-2 rounded"
                 value={formData.assetDescription} onChange={e => setFormData({...formData, assetDescription: e.target.value})} />
