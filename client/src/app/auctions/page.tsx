@@ -59,7 +59,7 @@ function AuctionsContent() {
 
       if (statusParam) params.status = statusParam;
 
-      const res = await axios.get("/api/auctions", { params });
+      const res = await apiClient.get("/auctions", { params });
 
       if (res.data?.success) {
         setTotalPages(res.data.meta?.totalPages || 1);

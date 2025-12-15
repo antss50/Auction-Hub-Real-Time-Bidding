@@ -33,7 +33,10 @@ const nextConfig = {
         pathname: '/**',
       },
     ],
-  },
+  
+        // Khai báo tên miền chứa hình ảnh bên ngoài
+        domains: ['example.com'], 
+    },
   async rewrites() {
     return [
       {

@@ -45,7 +45,7 @@ export default function HomePage() {
   };
 
   const fetchByStatus = async (status: "now" | "upcoming" | "completed") => {
-    const res = await apiClient.get("/api/auctions", {
+    const res = await apiClient.get("/auctions", {
       params: { status, limit: 8, page: 1 },
     });
 

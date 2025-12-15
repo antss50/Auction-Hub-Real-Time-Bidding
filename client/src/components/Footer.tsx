@@ -1,6 +1,6 @@
 export default function Footer() {
   return (
-    <footer className="bg-[#802623] text-gray-300 text-sm py-8 px-6 mt-12">
+    <footer className="bg-[#802623] text-gray-300 text-sm py-8 px-6 mt-12 m-10 rounded-xl">
       <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8">
         <div>
           <h3 className="text-lg font-bold text-white mb-3">Thanh Cong Auction</h3>
