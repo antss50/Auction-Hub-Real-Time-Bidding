@@ -7,7 +7,7 @@
     "build": "nx build client",
     "start": "nx start client",
     "lint": "nx lint client",
-    "postinstall": "prisma generate"
+    "postinstall": "prisma generate --schema=server/prisma/schema.prisma"
   },
   "private": true,
   "dependencies": {
