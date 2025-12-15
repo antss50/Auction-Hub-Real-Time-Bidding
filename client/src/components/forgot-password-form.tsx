@@ -2,7 +2,7 @@
 
 import { cn } from "@auction-hub/shacdn-utils";
 import { createClient } from "libs/supabase/client";
-import { Button } from "libs/shacdn-ui/src/button";
+import { Button } from "@auction-hub/shacdn-ui/button";
 import {
     Card,
     CardContent,
