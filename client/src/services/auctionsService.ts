@@ -36,12 +36,8 @@ export const registerToBid = async (formData: FormData): Promise<ApiResponse<any
 
 // 2. Submit Deposit
 export const submitDeposit = async (data: { registrationId: string; auctionId: string; amount: number }) => {
-    try {
-        const response = await apiClient.post<ApiResponse<PaymentInitiationData>>('/register-to-bid/submit-deposit', data);
-        return response.data.data; 
-    } catch (error: any) {
-        throw error;
-    }
+    const response = await apiClient.post<ApiResponse<PaymentInitiationData>>('/register-to-bid/submit-deposit', data);
+    return response.data.data; 
 };
 
 // 3. Verify Payment

@@ -5,7 +5,7 @@ import useEmblaCarousel, {
 import { ArrowLeft, ArrowRight } from "lucide-react"
 
 import { cn } from "@auction-hub/shacdn-utils"
-import { Button } from "libs/shacdn-ui/src/button"
+import { Button } from "./button"
 
 type CarouselApi = UseEmblaCarouselType[1]
 type UseCarouselParameters = Parameters<typeof useEmblaCarousel>

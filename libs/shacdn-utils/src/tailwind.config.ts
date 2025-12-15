@@ -3,7 +3,7 @@ const { join } = require('path');
 
 // Hàm buildConfig này sẽ nhận thư mục gốc của project (ví dụ: 'apps/client')
 // và tạo ra một cấu hình Tailwind hoàn chỉnh.
-function buildConfig(projectRoot) {
+function buildConfig(projectRoot: string) {
   return {
     content: [
       join(projectRoot, 'src/**/*.{ts,tsx,js,jsx}'),

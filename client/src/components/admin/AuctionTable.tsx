@@ -66,7 +66,7 @@ export const AuctionsTable = ({ auctions, loading, onEdit, onDelete, pagination 
                   <td className="px-6 py-4">
                     <div className="flex gap-3 items-center">
                       <div className="relative w-16 h-12 rounded overflow-hidden flex-shrink-0 bg-gray-100 border">
-                       <Image src={getImageUrl(item.images) || '/placeholder.jpg'} alt="" fill className="object-cover" />
+                       <Image src={getImageUrl(item.image) || '/placeholder.jpg'} alt="" fill className="object-cover" />
                       </div>                                                    
                       <div className="font-medium text-gray-800 line-clamp-1" title={item.name}>
                         {item.name}

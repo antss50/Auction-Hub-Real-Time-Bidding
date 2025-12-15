@@ -12,11 +12,11 @@ import Topbar from "../../../components/Topbar";
 import Navbar from "../../../components/Navbar";
 import Footer from "../../../components/Footer";
 import { getImageUrl, formatDate } from "../../utils/format";
-import { ApiArticleItem } from "../../../types/article";
+import { Article } from "../../../types/article";
 
-interface ArticleDetail extends ApiArticleItem {
+interface ArticleDetail extends Article {
   content: string;
-  relatedArticles: ApiArticleItem[];
+  relatedArticles: Article[];
 }
 
 export default function ArticleDetailPage() {
