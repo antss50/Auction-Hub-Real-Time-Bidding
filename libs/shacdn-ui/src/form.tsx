@@ -11,7 +11,7 @@ import {
 } from "react-hook-form"
 
 import { cn } from "@auction-hub/shacdn-utils"
-import { Label } from "@auction-hub/shacdn-ui/label"
+import { Label } from "./label"
 
 const Form = FormProvider
 

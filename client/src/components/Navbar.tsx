@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { Button } from "libs/shacdn-ui/src/button";
+import { Button } from "@auction-hub/shacdn-ui/button";
 import CurrentTime from "../components/CurrentTime";
 import { useRouter } from "next/navigation";
 import { useAuth } from "../contexts/AuthContext";
@@ -13,8 +13,8 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "../../../libs/shacdn-ui/src/dropdown-menu";
-import { Avatar, AvatarFallback, AvatarImage } from "../../../libs/shacdn-ui/src/avatar";
+} from "@auction-hub/shacdn-ui/dropdown-menu";
+import { Avatar, AvatarFallback, AvatarImage } from "@auction-hub/shacdn-ui/avatar";
 
 export default function Navbar() {
   const { isAuthenticated, user, logout } = useAuth();

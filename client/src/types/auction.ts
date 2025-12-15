@@ -6,6 +6,7 @@ export interface ApiAuctionItem {
   startingPrice: string;       
   depositAmountRequired: string; 
   auctionStartAt: string;
+  images: any;
 }
 
 export interface AuctionItem {
@@ -14,7 +15,7 @@ export interface AuctionItem {
   startingPrice: number;       
   deposit: number;             
   time: string;                
-  image: string;               
+  image: string;
   status?: "now" | "upcoming" | "completed"; 
   location: string;            
 }

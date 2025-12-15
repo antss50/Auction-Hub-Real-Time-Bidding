@@ -1,17 +1,17 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Slider } from "libs/shacdn-ui/src/slider";
-import { Label } from "libs/shacdn-ui/src/label";
-import { RadioGroup, RadioGroupItem } from "libs/shacdn-ui/src/radio-group";
+import { Slider } from "@auction-hub/shacdn-ui/slider";
+import { Label } from "@auction-hub/shacdn-ui/label";
+import { RadioGroup, RadioGroupItem } from "@auction-hub/shacdn-ui/radio-group";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "libs/shacdn-ui/src/select";
-import { Button } from "libs/shacdn-ui/src/button";
+} from "@auction-hub/shacdn-ui/select";
+import { Button } from "@auction-hub/shacdn-ui/button";
 // Đảm bảo import FilterOptions đúng đường dẫn
 // import { FilterOptions } from "../types/auction"; 
 

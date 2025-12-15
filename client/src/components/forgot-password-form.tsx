@@ -1,17 +1,17 @@
 "use client";
 
-import { cn } from "libs/shacdn-utils/src/cn";
-import { createClient } from "libs/supabase/client";
-import { Button } from "libs/shacdn-ui/src/button";
-import {
-    Card,
-    CardContent,
-    CardDescription,
-    CardHeader,
-    CardTitle,
-} from "libs/shacdn-ui/src/card";
-import { Input } from "libs/shacdn-ui/src/input";
-import { Label } from "libs/shacdn-ui/src/label";
+import { cn } from "@auction-hub/shacdn-utils";
+import { createClient } from "@auction-hub/supabase";
+import { 
+  Button, 
+  Input, 
+  Label, 
+  Card, 
+  CardContent, 
+  CardDescription, 
+  CardHeader, 
+  CardTitle 
+} from "@auction-hub/shacdn-ui";
 import Link from "next/link";
 import { useState } from "react";
 

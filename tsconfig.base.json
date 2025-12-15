@@ -31,6 +31,10 @@
         "libs/shacdn-utils/src/*"
       ],
       "@auction-hub/axios": ["libs/axios.ts"],
+      "@auction-hub/supabase": ["libs/supabase/client.ts"],
+      "auction-hub/supabase/*": ["libs/supabase/*"],
+      "@auction-hub/validators": ["libs/validators"],
+      "@auction-hub/validators/*": ["libs/validators/*"]
     }
   },
   "exclude": [

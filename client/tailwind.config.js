@@ -11,5 +11,8 @@
 
 /** @type {import('tailwindcss').Config} */
 const { buildConfig } = require('../libs/shacdn-utils/src/tailwind.config');
+const plugins = [
+    require('@tailwindcss/typography'),
+];
 
-module.exports = buildConfig(__dirname);
+module.exports = buildConfig(__dirname, { plugins });

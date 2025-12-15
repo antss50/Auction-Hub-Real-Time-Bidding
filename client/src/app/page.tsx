@@ -3,13 +3,15 @@
 
 import Image from "next/image";
 import { useEffect, useState } from "react";
-import { Button } from "libs/shacdn-ui/src/button";
+import { Button } from "@auction-hub/shacdn-ui/button";
 import SectionGrid from "../components/SectionGrid";
 import Topbar from "../components/Topbar";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import { AuctionItem, ApiAuctionItem, AuctionResponse } from "../types/auction";
-import apiClient from '@auction-hub/axios';
+import apiClient from "axios";
+import { Article } from "../types/article";
+import { formatCurrency, getImageUrl } from "./utils/format";
 
 export default function HomePage() {
   const [loading, setLoading] = useState(true);
@@ -19,11 +21,7 @@ export default function HomePage() {
     upcoming: [],
     past: [],
   });
-
-  const getRandomImage = (id: string) => {
-    const images = ["/images/auction-logo.jpg", "/images/auction-logo.jpg"];
-    return images[id.charCodeAt(id.length - 1) % images.length];
-  };
+  const [articles, setArticles] = useState<Article[]>([]);
 
   const mapAuction = (item: ApiAuctionItem): AuctionItem => {
     const start = new Date(item.auctionStartAt);
@@ -41,7 +39,7 @@ export default function HomePage() {
         hour: "2-digit",
         minute: "2-digit",
       }),
-      image: getRandomImage(item.id),
+      image: getImageUrl(item.images),
       location: "TP Hồ Chí Minh"
     };
   };
@@ -54,18 +52,43 @@ export default function HomePage() {
     return (res.data.data || []).map(mapAuction);
   };
 
+  const fetchArticles = async () => {
+    try {
+      const res = await apiClient.get("/api/articles", {
+        params: { 
+            limit: 4, 
+            page: 1, 
+            sortBy: 'createdAt', 
+            sortOrder: 'desc' 
+        },
+      });
+      console.log("Url of image:", res.data.data.map((item: any) => getImageUrl(item.image)));
+      if (res.data.success && res.data.data) {
+        return res.data.data.map((article: any) => ({
+            ...article,
+            image: getImageUrl(article.image)
+        }));
+      }
+    } catch (error) {
+      console.error("Lỗi tải tin tức:", error);
+    }
+    return [];
+  };
+
   useEffect(() => {
     const load = async () => {
       setLoading(true);
 
       try {
-        const [ongoing, upcoming, past] = await Promise.all([
+        const [ongoing, upcoming, past, fetchedArticles] = await Promise.all([
           fetchByStatus("now"),
           fetchByStatus("upcoming"),
           fetchByStatus("completed"),
+          fetchArticles()
         ]);
 
         setAuctions({ ongoing, upcoming, past });
+        setArticles(fetchedArticles || []);
       } catch (err) {
         console.error("Error fetching auctions:", err);
       }
@@ -148,6 +171,7 @@ export default function HomePage() {
             title="⚖️ Đấu giá đang diễn ra"
             type="now"
             items={auctions.ongoing}
+            linkPrefix="/auctions?type="
           />
         )}
 
@@ -156,6 +180,7 @@ export default function HomePage() {
             title="⚖️ Đấu giá sắp diễn ra"
             type="upcoming"
             items={auctions.upcoming}
+            linkPrefix="/auctions?type="
           />
         )}
 
@@ -164,6 +189,17 @@ export default function HomePage() {
             title="⚖️ Đấu giá đã diễn ra"
             type="completed"
             items={auctions.past}
+            linkPrefix="/auctions?type="
+          />
+        )}
+
+        {articles.length > 0 && (
+          <SectionBlock
+            title="📰 Tin tức mới nhất"
+            type="" 
+            items={articles}
+            linkPrefix="/articles" 
+            isArticle={true}
           />
         )}
       </div>
@@ -173,11 +209,13 @@ export default function HomePage() {
   );
 }
 
-const SectionBlock = ({ title, type, items }: any) => (
+const SectionBlock = ({ title, type, items, linkPrefix, isArticle = false }: any) => {
+  const seeAllLink = isArticle ? linkPrefix : `${linkPrefix}${type}`;
+  return (
   <>
     <div className="flex items-center justify-between mt-10">
       <h2 className="text-2xl font-bold">{title}</h2>
-      <a href={`/auctions?type=${type}`} className="text-lg">
+      <a href={seeAllLink} className="text-lg">
         <i>
           <u>Xem tất cả</u>
         </i>
@@ -186,4 +224,5 @@ const SectionBlock = ({ title, type, items }: any) => (
 
     <SectionGrid items={items} />
   </>
-);
+  )
+};

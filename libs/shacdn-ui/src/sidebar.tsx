@@ -3,25 +3,25 @@ import { Slot } from "@radix-ui/react-slot"
 import { VariantProps, cva } from "class-variance-authority"
 import { PanelLeft } from "lucide-react"
 
-import { useIsMobile } from "@auction-hub/shacdn-ui/hooks/use-mobile"
-import { cn } from "@auction-hub/shacdn-ui/components/lib/utils"
-import { Button } from "@auction-hub/shacdn-ui/button"
-import { Input } from "@auction-hub/shacdn-ui/input"
-import { Separator } from "@auction-hub/shacdn-ui/separator"
+import { useIsMobile } from "./hooks/use-mobile"
+import { cn } from "@auction-hub/shacdn-utils"
+import { Button } from "./button" 
+import { Input } from "./input"
+import { Separator } from "./separator"
 import {
   Sheet,
   SheetContent,
   SheetDescription,
   SheetHeader,
   SheetTitle,
-} from "@auction-hub/shacdn-ui/sheet"
-import { Skeleton } from "@auction-hub/shacdn-ui/skeleton"
+} from "./sheet"
+import { Skeleton } from "./skeleton"
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
-} from "@auction-hub/shacdn-ui/tooltip"
+} from "./tooltip"
 
 const SIDEBAR_COOKIE_NAME = "sidebar_state"
 const SIDEBAR_COOKIE_MAX_AGE = 60 * 60 * 24 * 7

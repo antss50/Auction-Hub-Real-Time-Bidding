@@ -8,9 +8,9 @@ export default function Topbar() {
         <span>abc@gmail.com</span>
       </div>
       <div className="flex gap-6">
-        <Link href="/news">Tin tức</Link>
+        <Link href="/articles">Tin tức</Link>
         <Link href="/about">Giới thiệu</Link>
-        <Link href="/contact">Liên hệ</Link>
+        <Link href="/contacts">Liên hệ</Link>
         <span>VI | EN</span>
       </div>
     </div>

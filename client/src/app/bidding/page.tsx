@@ -14,7 +14,7 @@ import {
     RotateCcw, 
     List 
 } from "lucide-react";
-import { Button } from "libs/shacdn-ui/src/button"; 
+import { Button } from "@auction-hub/shacdn-ui/button"; 
 import Topbar from "../../components/Topbar"; 
 import Navbar from "../../components/Navbar"; 
 

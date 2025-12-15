@@ -4,12 +4,12 @@
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { registerFormSchema, RegisterFormSchema } from "../../../../../libs/validators/auth";
+import { registerFormSchema, RegisterFormSchema } from "@auction-hub/validators/auth";
 import { registerUser } from "../../../services/authService";
 import { useRouter } from "next/navigation";
-import { useToast } from "../../../../../libs/shacdn-ui/src/hooks/use-toast";
-import { Button } from "../../../../../libs/shacdn-ui/src/button";
-import { Input } from "../../../../../libs/shacdn-ui/src/input";
+import { useToast } from "@auction-hub/shacdn-ui/hooks/use-toast";
+import { Button } from "@auction-hub/shacdn-ui/button";
+import { Input } from "@auction-hub/shacdn-ui/input";
 import {
   Form,
   FormControl,
@@ -17,10 +17,10 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "../../../../../libs/shacdn-ui/src/form";
-import { Checkbox } from "../../../../../libs/shacdn-ui/src/checkbox";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "../../../../../libs/shacdn-ui/src/tabs";
-import { Card, CardContent, CardHeader, CardTitle } from "../../../../../libs/shacdn-ui/src/card";
+} from "@auction-hub/shacdn-ui/form";
+import { Checkbox } from "@auction-hub/shacdn-ui/checkbox";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@auction-hub/shacdn-ui/tabs";
+import { Card, CardContent, CardHeader, CardTitle } from "@auction-hub/shacdn-ui/card";
 import { Eye, EyeOff, User, Building } from "lucide-react";
 
 export default function RegisterPage() {
@@ -51,7 +51,7 @@ export default function RegisterPage() {
   async function onSubmit(data: RegisterFormSchema) {
     // Separate attributes used only in UI (confirmPassword, acceptTerms) from the data sent to the API
     const { confirmPassword, acceptTerms, ...rest  } = data;
-    let apiData: any = {
+    const apiData: any = {
       email: rest.email,
       password: rest.password,
       full_name: rest.full_name,

@@ -1,8 +1,8 @@
 "use client";
 
 import { useSearchParams } from "next/navigation";
-import { Card, CardContent, CardHeader, CardTitle } from "../../../../../../libs/shacdn-ui/src/card";
-import { Button } from "../../../../../../libs/shacdn-ui/src/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@auction-hub/shacdn-ui/card";
+import { Button } from "@auction-hub/shacdn-ui/button";
 import Link from "next/link";
 
 export default function RegisterSuccessPage() {
