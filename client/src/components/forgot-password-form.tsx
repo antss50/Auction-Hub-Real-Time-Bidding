@@ -1,6 +1,6 @@
 "use client";
 
-import { cn } from "libs/shacdn-utils/src/cn";
+import { cn } from "@auction-hub/shacdn-utils";
 import { createClient } from "libs/supabase/client";
 import { Button } from "libs/shacdn-ui/src/button";
 import {

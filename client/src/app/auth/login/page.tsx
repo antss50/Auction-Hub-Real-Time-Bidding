@@ -3,14 +3,14 @@
 
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { loginSchema, LoginSchema } from "../../../../../libs/validators/auth";
+import { loginSchema, LoginSchema } from "@auction-hub/validators/auth";
 import { loginUser } from "../../../services/authService";
 import { useAuth } from "../../../contexts/AuthContext";
 import { useRouter } from "next/navigation";
-import { useToast } from "../../../../../libs/shacdn-ui/src/hooks/use-toast";
+import { useToast } from "@auction-hub/shacdn-ui/hooks/use-toast";
 import { useState } from "react";
-import { Button } from "../../../../../libs/shacdn-ui/src/button";
-import { Input } from "../../../../../libs/shacdn-ui/src/input";
+import { Button } from "@auction-hub/shacdn-ui/button";
+import { Input } from "@auction-hub/shacdn-ui/input";
 import {
   Form,
   FormControl,
@@ -18,14 +18,14 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "../../../../../libs/shacdn-ui/src/form";
+} from "@auction-hub/shacdn-ui/form";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "../../../../../libs/shacdn-ui/src/card";
+} from "@auction-hub/shacdn-ui/card";
 import { set } from "zod";
 
 export default function LoginPage() {

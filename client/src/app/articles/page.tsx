@@ -4,19 +4,19 @@ import { useEffect, useState, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { Search } from "lucide-react";
 import apiClient from "axios"; // Import axios instance của bạn
-import { ApiArticleItem } from "../../types/article";
+import { Article } from "../../types/article";
 import Topbar from "../../components/Topbar";
 import Navbar from "../../components/Navbar";
 import Footer from "../../components/Footer";
 import SectionGrid from "../../components/SectionGrid";
-import { Button } from "libs/shacdn-ui/src/button";
-import { Input } from "libs/shacdn-ui/src/input";
+import { Button } from "@auction-hub/shacdn-ui/button";
+import { Input } from "@auction-hub/shacdn-ui/input";
 
 function ArticlesContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  const [articles, setArticles] = useState<ApiArticleItem[]>([]);
+  const [articles, setArticles] = useState<Article[]>([]);
   const [loading, setLoading] = useState(true);
   const [totalPages, setTotalPages] = useState(1);
   

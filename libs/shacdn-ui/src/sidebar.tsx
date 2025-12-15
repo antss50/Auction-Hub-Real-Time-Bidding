@@ -4,8 +4,8 @@ import { VariantProps, cva } from "class-variance-authority"
 import { PanelLeft } from "lucide-react"
 
 import { useIsMobile } from "@auction-hub/shacdn-ui/hooks/use-mobile"
-import { cn } from "@auction-hub/shacdn-ui/components/lib/utils"
-import { Button } from "@auction-hub/shacdn-ui/button"
+import { cn } from "libs/shacdn-utils/src/cn"
+import { Button } from "@auction-hub/shacdn-ui/button" 
 import { Input } from "@auction-hub/shacdn-ui/input"
 import { Separator } from "@auction-hub/shacdn-ui/separator"
 import {

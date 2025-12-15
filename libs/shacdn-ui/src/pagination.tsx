@@ -2,7 +2,7 @@ import * as React from "react"
 import { ChevronLeft, ChevronRight, MoreHorizontal } from "lucide-react"
 
 import { cn } from "@auction-hub/shacdn-utils"
-import { ButtonProps, buttonVariants } from "@auction-hub/shacdn-ui/button"
+import { ButtonProps, buttonVariants } from "libs/shacdn-ui/src/button"
 
 const Pagination = ({ className, ...props }: React.ComponentProps<"nav">) => (
   <nav

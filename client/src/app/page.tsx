@@ -3,7 +3,7 @@
 
 import Image from "next/image";
 import { useEffect, useState } from "react";
-import { Button } from "libs/shacdn-ui/src/button";
+import { Button } from "@auction-hub/shacdn-ui/button";
 import SectionGrid from "../components/SectionGrid";
 import Topbar from "../components/Topbar";
 import Navbar from "../components/Navbar";
