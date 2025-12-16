@@ -9,7 +9,7 @@ import Topbar from "../components/Topbar";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import { AuctionItem, ApiAuctionItem, AuctionResponse } from "../types/auction";
-import apiClient from "axios";
+import apiClient from "@auction-hub/axios";
 import { Article } from "../types/article";
 import { formatCurrency, getImageUrl } from "./utils/format";
 
@@ -54,7 +54,7 @@ export default function HomePage() {
 
   const fetchArticles = async () => {
     try {
-      const res = await apiClient.get("/api/articles", {
+      const res = await apiClient.get("/articles", {
         params: { 
             limit: 4, 
             page: 1, 

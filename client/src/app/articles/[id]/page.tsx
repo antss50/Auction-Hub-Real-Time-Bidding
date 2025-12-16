@@ -7,7 +7,7 @@ import { useParams } from "next/navigation";
 import { Calendar, User, ChevronRight } from "lucide-react";
 import DOMPurify from "isomorphic-dompurify"; 
 
-import apiClient from "axios";
+import apiClient from "@auction-hub/axios";
 import Topbar from "../../../components/Topbar";
 import Navbar from "../../../components/Navbar";
 import Footer from "../../../components/Footer";
@@ -28,7 +28,7 @@ export default function ArticleDetailPage() {
     const fetchArticleDetail = async () => {
       try {
         setLoading(true);
-        const res = await apiClient.get(`/api/articles/${id}`);
+        const res = await apiClient.get(`/articles/${id}`);
         if (res.data.success && res.data.data) {
           setArticle(res.data.data);
         }

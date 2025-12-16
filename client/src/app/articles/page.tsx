@@ -3,7 +3,7 @@
 import { useEffect, useState, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { Search } from "lucide-react";
-import apiClient from "axios"; // Import axios instance của bạn
+import apiClient from "@auction-hub/axios"; // Import axios instance của bạn
 import { Article } from "../../types/article";
 import Topbar from "../../components/Topbar";
 import Navbar from "../../components/Navbar";
@@ -46,7 +46,7 @@ function ArticlesContent() {
           type: type === 'all' ? undefined : type
         };
 
-        const res = await apiClient.get("/api/articles", { params });
+        const res = await apiClient.get("/articles", { params });
 
         if (res.data.success) {
           const rawData = res.data.data || [];

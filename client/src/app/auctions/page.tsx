@@ -11,7 +11,7 @@ import SectionGrid from "../../components/SectionGrid";
 import Link from "next/link";
 import { Home } from "lucide-react";
 import AuctionFilter from "../../components/AuctionFilter";
-import apiClient from "axios";
+import apiClient from "@auction-hub/axios";
 import { getImageUrl } from "../utils/format";
 const PAGE_SIZE = 12;
 

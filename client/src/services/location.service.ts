@@ -1,4 +1,4 @@
-import apiClient from 'axios';
+import apiClient from '@auction-hub/axios';
 
 export const LocationService = {
   getAll: async () => {

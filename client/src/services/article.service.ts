@@ -1,4 +1,4 @@
-import apiClient from 'axios';
+import apiClient from '@auction-hub/axios';
 
 export const NewsService = {
   // Lấy danh sách (có phân trang, search, sort)
@@ -29,7 +29,7 @@ export const NewsService = {
 
     try {
       // 4. Gửi request với params sạch
-      const res = await apiClient.get('/api/articles', { params: cleanParams });
+      const res = await apiClient.get('/articles', { params: cleanParams });
       return res.data;
     } catch (error: any) {
       console.error("API Error:", error.response?.data || error.message);
@@ -40,25 +40,25 @@ export const NewsService = {
 
   // Lấy chi tiết 1 bài
   getOne: async (id: string) => {
-    const res = await apiClient.get(`/api/articles/${id}`);
+    const res = await apiClient.get(`/articles/${id}`);
     return res.data;
   },
 
   // Tạo mới
   create: async (data: any) => {
-    const res = await apiClient.post('/api/articles', data);
+    const res = await apiClient.post('/articles', data);
     return res.data;
   },
 
   // Cập nhật
   update: async (id: string, data: any) => {
-    const res = await apiClient.put(`/api/articles/${id}`, data);
+    const res = await apiClient.put(`/articles/${id}`, data);
     return res.data;
   },
 
   // Xóa
   delete: async (id: string) => {
-    const res = await apiClient.delete(`/api/articles/${id}`);
+    const res = await apiClient.delete(`/articles/${id}`);
     return res.data;
   }
 };
