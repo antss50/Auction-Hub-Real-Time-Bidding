@@ -3,7 +3,7 @@
 import { useEffect, useState, Suspense } from "react"; // Thêm Suspense
 import { useSearchParams, useRouter } from "next/navigation";
 import { useToast } from "@auction-hub/shacdn-ui/hooks/use-toast";
-import apiClient from "axios"; // Import axios instance của bạn
+import apiClient from "@auction-hub/axios"; // Import axios instance của bạn
 import { Card, CardContent, CardHeader, CardTitle } from "@auction-hub/shacdn-ui/card";
 import { Loader2 } from "lucide-react";
 

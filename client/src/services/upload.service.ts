@@ -1,4 +1,4 @@
-import apiClient from 'axios'; 
+import apiClient from '@auction-hub/axios'; 
 
 export const UploadService = {
   uploadFiles: async (files: File[]) => {
