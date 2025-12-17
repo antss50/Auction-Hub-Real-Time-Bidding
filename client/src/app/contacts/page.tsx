@@ -180,7 +180,7 @@ export default function ContactPage() {
                 </div>
             </section>
 
-            <section className="max-w-6xl mx-auto py-12 grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
+            <section className="max-w-7xl mx-auto py-12 grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
                 {/* Google Map */}
                 <div className="rounded-2xl overflow-hidden shadow-md">
                     <iframe
@@ -245,7 +245,7 @@ export default function ContactPage() {
 
                         <button
                             type="submit"
-                            className="flex items-center justify-center gap-2 w-full bg-red-600 text-white py-2 rounded-lg hover:bg-red-700 transition"
+                            className="flex items-center justify-center gap-2 w-full bg-[#802623] text-white py-2 rounded-lg hover:bg-red-700 transition"
                         >
                             <Send size={16} />
                             Gửi liên hệ

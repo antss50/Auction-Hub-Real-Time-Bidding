@@ -13,7 +13,59 @@ import { Home } from "lucide-react";
 import AuctionFilter from "../../components/AuctionFilter";
 import apiClient from "@auction-hub/axios";
 import { getImageUrl } from "../utils/format";
+import { Button } from "@auction-hub/shacdn-ui/button";
+
 const PAGE_SIZE = 12;
+const DOTS = "...";
+
+const range = (start: number, end: number) =>
+  Array.from({ length: Math.max(0, end - start + 1) }, (_, i) => start + i);
+
+function getPaginationItems({
+  page,
+  totalPages,
+  siblingCount = 1,
+  boundaryCount = 1,
+}: {
+  page: number;
+  totalPages: number;
+  siblingCount?: number;
+  boundaryCount?: number;
+}) {
+  if (totalPages <= 1) return [1];
+
+  const totalNumbersToShow = boundaryCount * 2 + siblingCount * 2 + 3;
+  if (totalPages <= totalNumbersToShow) return range(1, totalPages);
+
+  const leftSibling = Math.max(page - siblingCount, boundaryCount + 1);
+  const rightSibling = Math.min(page + siblingCount, totalPages - boundaryCount);
+
+  const showLeftDots = leftSibling > boundaryCount + 2;
+  const showRightDots = rightSibling < totalPages - boundaryCount - 1;
+
+  const items: (number | string)[] = [];
+
+  // Start pages
+  items.push(...range(1, boundaryCount));
+
+  // Left gap
+  if (showLeftDots) items.push(DOTS);
+  else items.push(...range(boundaryCount + 1, leftSibling - 1));
+
+  // Middle pages
+  items.push(...range(leftSibling, rightSibling));
+
+  // Right gap
+  if (showRightDots) items.push(DOTS);
+  else items.push(...range(rightSibling + 1, totalPages - boundaryCount));
+
+  // End pages
+  items.push(...range(totalPages - boundaryCount + 1, totalPages));
+
+  // Remove duplicates do overlap
+  return items.filter((v, i, arr) => i === 0 || v !== arr[i - 1]);
+}
+
 
 function AuctionsContent() {
   const router = useRouter();
@@ -66,7 +118,7 @@ function AuctionsContent() {
         const raw: ApiAuctionItem[] = res.data.data || [];
 
         setAuctions(raw.map(mapAuction));
-        
+
 
       }
     } catch (err) {
@@ -139,28 +191,51 @@ function AuctionsContent() {
           <>
             <SectionGrid items={filteredAuctions} />
 
-            {/* Pagination */}
-            <div className="flex justify-center gap-4 mt-10">
-              <button
-                disabled={page <= 1}
-                onClick={() => handlePageChange(page - 1)}
-                className="px-4 py-2 rounded bg-gray-200 hover:bg-gray-300 disabled:bg-gray-100"
-              >
-                Trang trước
-              </button>
+            {/* Pagination (UI giống #1, logic giữ nguyên) */}
+            {totalPages > 1 && (
+              <div className="flex justify-center items-center gap-2 mt-12 mb-8">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handlePageChange(page - 1)}
+                  disabled={page <= 1}
+                >
+                  &lt;
+                </Button>
 
-              <span className="px-4 py-2">
-                {page} / {totalPages}
-              </span>
+                {getPaginationItems({ page, totalPages, siblingCount: 1, boundaryCount: 1 }).map(
+                  (item, idx) =>
+                    item === DOTS ? (
+                      <span
+                        key={`dots-${idx}`}
+                        className="w-8 h-8 flex items-center justify-center text-gray-400 select-none"
+                      >
+                        …
+                      </span>
+                    ) : (
+                      <button
+                        key={item}
+                        onClick={() => handlePageChange(item as number)}
+                        className={`w-8 h-8 rounded-md text-sm font-medium transition-colors ${page === item
+                          ? "bg-[#8B1E1E] text-white"
+                          : "bg-white border border-gray-200 text-gray-600 hover:bg-gray-50"
+                          }`}
+                      >
+                        {item}
+                      </button>
+                    )
+                )}
 
-              <button
-                disabled={page >= totalPages}
-                onClick={() => handlePageChange(page + 1)}
-                className="px-4 py-2 rounded bg-gray-200 hover:bg-gray-300 disabled:bg-gray-100"
-              >
-                Trang sau
-              </button>
-            </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handlePageChange(page + 1)}
+                  disabled={page >= totalPages}
+                >
+                  &gt;
+                </Button>
+              </div>
+            )}
           </>
         ) : (
           <div className="text-center py-20 text-gray-500">
