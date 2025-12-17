@@ -307,7 +307,7 @@ export default function AuctionDetailPage() {
                     </aside>
                 </div>
                 <div className="bg-white border border-gray-200 my-5 rounded-xl p-5">
-                    <AuctionTabs description={auction.assetDescription} owner={auction.owner} attachments={auction.attachments} />
+                    <AuctionTabs description={auction.assetDescription} owner={auction.propertyOwner} attachments={auction.attachments} />
                 </div>
             </section>
             <Footer />

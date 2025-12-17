@@ -1,5 +1,3 @@
-// src/types/auction.ts
-
 export interface ApiAuctionItem {
   id: string;
   name: string;
@@ -49,16 +47,16 @@ export interface AuctionDetail {
     bidIncrement: string;
     depositAmountRequired: string;
     saleFee: string;
-    owner: Owner;
+    propertyOwner: Owner;
     images: { url: string; sortOrder: number }[];
     attachments: Attachment[];
 };
 
 export interface Owner {
-    id: string;
-    fullName: string;
+    name: string;
     email: string;
-    avatarUrl: string | null;
+    phone: string;
+    organization: string;
 };
 
 export interface Attachment {
