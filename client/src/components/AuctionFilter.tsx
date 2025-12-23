@@ -12,10 +12,7 @@ import {
   SelectValue,
 } from "@auction-hub/shacdn-ui/select";
 import { Button } from "@auction-hub/shacdn-ui/button";
-// Đảm bảo import FilterOptions đúng đường dẫn
-// import { FilterOptions } from "../types/auction"; 
 
-// Định nghĩa lại type này ở đây hoặc import từ file types nếu bạn đã update nó
 export type FilterOptions = {
   type: "now" | "upcoming" | "completed";
   priceRange: number[];

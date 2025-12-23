@@ -14,14 +14,9 @@ const nextConfig = {
         hostname: 'storage.daugiavietnam.com', // Domain ảnh đấu giá
         pathname: '/**',
       },
+      
       {
         protocol: 'http',
-        hostname: 'localhost', // Domain ảnh bài viết (backend local)
-        port: '3000',
-        pathname: '/**',
-      },
-      {
-        protocol: 'http', // Lỗi của bạn đang báo là http
         hostname: 'res.cloudinary.com',
         port: '',
         pathname: '/**',
@@ -41,7 +36,7 @@ const nextConfig = {
     return [
       {
         source: '/api/:path*',
-        destination: 'http://localhost:3000/api/:path*', 
+        destination: 'https://auction-hub-kc24.onrender.com/api/:path*', 
       },
     ]
   },

@@ -1,15 +1,29 @@
 import { useState, useEffect, useCallback } from 'react';
 import { AuctionService } from '../services/auction.service';
-import { AuctionItem } from '../types/auction';
+import { AuctionDetail, AuctionItem } from '../types/auction';
+import { useDebounce } from './useDebounce';
 
 export const useAdminAuctions = () => {
   const [auctions, setAuctions] = useState<AuctionItem[]>([]);
   const [loading, setLoading] = useState(true);
-  const [refreshKey, setRefreshKey] = useState(0); // Biến để trigger reload
+  const [refreshKey, setRefreshKey] = useState(0); 
+  const [pagination, setPagination] = useState({
+    page: 1,
+    limit: 10,
+    totalPages: 1,
+    totalItems: 0,
+  });
+
+  const [filters, setFilters] = useState({
+    name: '',       
+    status: 'upcoming',     
+    auctionType: 'all',  
+  });
+
+  // Debounce search để tránh gọi API liên tục khi gõ
+  const debouncedSearchTerm = useDebounce(filters.name, 500);
 
   const [page, setPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
-  const [totalItems, setTotalItems] = useState(0);
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<any>(null);
@@ -22,13 +36,28 @@ export const useAdminAuctions = () => {
   const fetchAuctions = useCallback(async () => {
     try {
       setLoading(true);
-      const data = await AuctionService.getAll({ page: page, limit: 10, sortOrder: 'desc' });
-      if (data.success) {
+
+      const params = {
+        page: pagination.page,
+        limit: pagination.limit,
+        sortBy: 'createdAt',
+        sortOrder: 'desc',
+        // Merge filters vào params
+        ...(debouncedSearchTerm && { name: debouncedSearchTerm }),
+        ...(filters.status && filters.status !== 'all' && { status: filters.status }),
+        ...(filters.auctionType && filters.auctionType !== 'all' && { auctionType: filters.auctionType }),
+      };
+
+      const data = await AuctionService.getAll(params);
+      if (data && data.success) {
         setAuctions(data.data);
 
         if (data.meta) {
-            setTotalPages(data.meta.totalPages);
-            setTotalItems(data.meta.total);
+            setPagination(prev => ({
+                ...prev,
+                totalPages: data.meta.totalPages,
+                totalItems: data.meta.totalItems
+            }));
         }
       }
     } catch (error) {
@@ -36,9 +65,13 @@ export const useAdminAuctions = () => {
     } finally {
       setLoading(false);
     }
-  }, [refreshKey, page]);
+  }, [pagination.page, pagination.limit, debouncedSearchTerm, filters.status, filters.auctionType]);
 
-  // useEffect chỉ gọi hàm fetch
+  // Reset về trang 1 khi thay đổi filter
+  useEffect(() => {
+    setPagination(prev => ({ ...prev, page: 1 }));
+  }, [debouncedSearchTerm, filters.status, filters.auctionType]);
+
   useEffect(() => {
     fetchAuctions();
   }, [fetchAuctions]);
@@ -50,7 +83,7 @@ export const useAdminAuctions = () => {
       setRefreshKey(prev => prev + 1); // Reload lại list sau khi xóa
       return true;
     } catch (error) {
-      alert('Lỗi khi xóa');
+      alert('Phiên đấu giá chỉ có thể bị xoá khi chưa diễn ra');
       return false;
     }
   };
@@ -129,7 +162,11 @@ export const useAdminAuctions = () => {
   return {
     auctions,
     loading,
-    pagination: { page, totalPages, totalItems, setPage },
+    pagination,
+    setPagination, 
+    filters,
+    setFilters,
+    refresh: fetchAuctions,
     deleteAuction,
     createAuction,
     updateAuction,
@@ -148,6 +185,6 @@ export const useAdminAuctions = () => {
     itemToDeleteId,
     setItemToDeleteId,
     isDeleting,
-    setIsDeleting,
+    setIsDeleting
   };
 };

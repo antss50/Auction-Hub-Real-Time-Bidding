@@ -1,9 +1,9 @@
 "use client";
 
-import { useEffect, useState, Suspense } from "react"; // Thêm Suspense
+import { useEffect, useState, Suspense } from "react"; 
 import { useSearchParams, useRouter } from "next/navigation";
 import { useToast } from "@auction-hub/shacdn-ui/hooks/use-toast";
-import apiClient from "@auction-hub/axios"; // Import axios instance của bạn
+import apiClient from "@auction-hub/axios"; 
 import { Card, CardContent, CardHeader, CardTitle } from "@auction-hub/shacdn-ui/card";
 import { Loader2 } from "lucide-react";
 
@@ -24,16 +24,7 @@ function VerifyContent() {
       }
 
       try {
-        // Gọi API Backend để verify code này (Bạn cần implement API này ở backend nếu chưa có)
-        // Hoặc nếu dùng Supabase client ở frontend:
-        // await supabase.auth.exchangeCodeForSession(code)
-
-        // GIẢ SỬ: Bạn gọi Backend để verify (Backend gọi supabase.auth.exchangeCodeForSession)
-        // Lưu ý: Code backend hiện tại của bạn đang dùng 'token', cần check lại logic Supabase PKCE
-
-        // Nếu backend chưa có route exchange code, bạn có thể xử lý tạm ở frontend bằng supabase-js
-        // Nhưng tốt nhất là gọi API backend:
-        await apiClient.post('/auth/verify-email', { token: code }); // Giả sử backend nhận 'token' là code
+        await apiClient.post('/auth/verify-email', { token: code }); 
 
         setStatus("success");
         toast({ title: "Xác thực thành công!", className: "bg-green-500 text-white" });

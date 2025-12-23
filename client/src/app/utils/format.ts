@@ -36,3 +36,19 @@ export const getImageUrl = (imgData: any): string => {
 
   return "/images/auction-logo.jpg";
 };
+
+export const getComputedStatus = (startAt: string, endAt: string, originalStatus?: string) => {
+  if (!startAt || !endAt) return originalStatus || 'unknown';
+
+  const now = new Date().getTime();
+  const start = new Date(startAt).getTime();
+  const end = new Date(endAt).getTime();
+
+  if (now < start) {
+    return 'upcoming'; // Sắp diễn ra
+  } else if (now >= start && now <= end) {
+    return 'now'; // Đang diễn ra
+  } else {
+    return 'completed'; // Đã kết thúc
+  }
+};

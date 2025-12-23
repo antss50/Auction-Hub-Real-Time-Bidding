@@ -1,6 +1,6 @@
 import { Edit, Trash2, ChevronLeft, ChevronRight, Loader2 } from 'lucide-react';
 import Image from 'next/image';
-import { formatDate } from '../../app/utils/format'; 
+import { formatDate, getImageUrl } from '../../app/utils/format'; 
 import { Article } from '../../types/article';
 
 interface Props {
@@ -42,7 +42,7 @@ export const NewsTable = ({ data, loading, pagination, onEdit, onDelete }: Props
                     <td className="px-6 py-4">
                         <div className="flex gap-3 items-center">
                             <div className="relative w-16 h-12 rounded overflow-hidden flex-shrink-0 bg-gray-100 border">
-                                <Image src={item.image || '/placeholder.jpg'} alt="" fill className="object-cover" />
+                                <Image src={getImageUrl(item.image)} alt="" fill className="object-cover" />
                             </div>
                             <div>
                                 <p className="font-medium text-gray-900 line-clamp-1 max-w-[200px]" title={item.title}>{item.title}</p>

@@ -22,7 +22,7 @@ export const AuctionCard = ({ item }: { item: AuctionItem }) => {
         />
       </div>
 
-      <div className="bg-yellow-400 p-4 flex-grow flex flex-col justify-between">
+      <div className="bg-gray-100 p-4 flex-grow flex flex-col justify-between">
         <h3 className="font-bold text-gray-800 mb-3 text-base line-clamp-2 min-h-[3rem]" title={item.name}>
           {item.name}
         </h3>

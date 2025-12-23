@@ -1,11 +1,11 @@
 import React from 'react';
-import { Edit, Trash2, Loader2, ChevronRight, ChevronLeft } from 'lucide-react';
-import { AuctionItem } from '../../types/auction'; 
+import { Edit, Trash2, Loader2, ChevronRight, ChevronLeft, Eye } from 'lucide-react';
+import { AuctionDetail, AuctionItem, ApiAuctionItem } from '../../types/auction'; 
 import { formatCurrency, getImageUrl } from '../../app/utils/format'; 
 import Image from 'next/image';
 
 interface Props {
-  auctions: AuctionItem[];
+  auctions: ApiAuctionItem[];
   loading: boolean;
   pagination: {
     page: number;
@@ -13,13 +13,14 @@ interface Props {
     totalItems: number;
     setPage: (page: number) => void;
   };
-  onEdit: (item: AuctionItem) => void;
+  onEdit: (id: AuctionItem) => void;
   onDelete: (id: string) => void;
+  onViewDetail: (item: AuctionItem) => void;
 }
 
-export const AuctionsTable = ({ auctions, loading, onEdit, onDelete, pagination }: Props) => {
+export const AuctionsTable = ({ auctions, loading, onEdit, onDelete, pagination, onViewDetail }: Props) => {
   const { page, totalPages, totalItems, setPage } = pagination;
-  console.log ('AuctionsTable render with auctions:', auctions.map(a => a.image));
+  console.log ('AuctionsTable render with auctions:', auctions.map(a => a.images));
   return (
     <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
       <div className="px-6 py-4 border-b border-gray-100 flex justify-between items-center">
@@ -33,8 +34,8 @@ export const AuctionsTable = ({ auctions, loading, onEdit, onDelete, pagination 
             <tr>
               <th className="px-6 py-4 font-semibold">Tên tài sản</th>
               <th className="px-6 py-4 font-semibold">Giá khởi điểm</th>
-              <th className="px-6 py-4 font-semibold">Người đặt cao nhất</th>
-              <th className="px-6 py-4 font-semibold">Trạng thái</th>
+              <th className="px-6 py-4 font-semibold">Tiền đặt cọc</th>
+              {/* <th className="px-6 py-4 font-semibold">Trạng thái</th> */}
               <th className="px-6 py-4 font-semibold text-right">Hành động</th>
             </tr>
           </thead>
@@ -60,13 +61,14 @@ export const AuctionsTable = ({ auctions, loading, onEdit, onDelete, pagination 
               </tr>
             ) : (
               /* 3. Hiển thị dữ liệu */
-              auctions.map((item) => (
-                <tr key={item.id} className="hover:bg-gray-50 transition-colors duration-150">
+              auctions.map((item) => {
+                return (
+                  <tr key={item.id} className="hover:bg-gray-50 transition-colors duration-150">
                   {/* Cột Tên */}
                   <td className="px-6 py-4">
                     <div className="flex gap-3 items-center">
                       <div className="relative w-16 h-12 rounded overflow-hidden flex-shrink-0 bg-gray-100 border">
-                       <Image src={getImageUrl(item.image) || '/placeholder.jpg'} alt="" fill className="object-cover" />
+                       <Image src={getImageUrl(item.images) || '/placeholder.jpg'} alt="" fill className="object-cover" />
                       </div>                                                    
                       <div className="font-medium text-gray-800 line-clamp-1" title={item.name}>
                         {item.name}
@@ -81,23 +83,20 @@ export const AuctionsTable = ({ auctions, loading, onEdit, onDelete, pagination 
                   </td>
 
                   {/* Cột Người đặt cao nhất (Logic hiển thị tạm thời) */}
-                  {/* <td className="px-6 py-4 text-gray-600 text-sm">
-                    {item.status === 'upcoming' ? (
-                        <span className="text-gray-400 italic">-- Sắp diễn ra --</span>
-                    ) : item.highestBid ? (
-                        <span className="font-medium text-black">{formatCurrency(item.highestBid)}</span>
-                    ) : (
-                        <span className="text-gray-400">-</span>
-                    )}
-                  </td> */}
-
-                  {/* Cột Trạng thái */}
-                  <td className="px-6 py-4">
-                    <StatusBadge status={item.status || ''} />
+                  <td className="px-6 py-4 text-gray-600 text-sm">
+                    {formatCurrency(item.depositAmountRequired)}
                   </td>
 
                   {/* Cột Hành động */}
                   <td className="px-6 py-4 text-right space-x-2">
+                    <button
+                      onClick={() => onViewDetail(item)}
+                      className="p-2 text-gray-500 hover:text-green-600 hover:bg-green-50 rounded-md transition-colors"
+                      title="Xem chi tiết"
+                    >
+                      <Eye size={18} />
+                    </button>
+
                     <button
                       onClick={() => onEdit(item)}
                       className="p-2 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded-md transition-colors"
@@ -114,8 +113,8 @@ export const AuctionsTable = ({ auctions, loading, onEdit, onDelete, pagination 
                     </button>
                   </td>
                 </tr>
-              ))
-            )}
+                )
+          }))}
           </tbody>
         </table>
       </div>
@@ -148,38 +147,3 @@ export const AuctionsTable = ({ auctions, loading, onEdit, onDelete, pagination 
   );
 };
 
-// --- SUB COMPONENT: Status Badge ---
-const StatusBadge = ({ status }: { status: string }) => {
-  switch (status) {
-    case 'active':
-    case 'happening': // Backend có thể trả về 'happening' hoặc 'active'
-      return (
-        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-          <span className="w-2 h-2 mr-1 bg-green-500 rounded-full animate-pulse"></span>
-          Đang diễn ra
-        </span>
-      );
-    case 'scheduled':
-    case 'upcoming':
-      return (
-        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
-          <span className="w-2 h-2 mr-1 bg-yellow-500 rounded-full"></span>
-          Sắp diễn ra
-        </span>
-      );
-    case 'ended':
-    case 'completed':
-    case 'past':
-      return (
-        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
-          Đã kết thúc
-        </span>
-      );
-    default:
-      return (
-        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-50 text-blue-700">
-          {status}
-        </span>
-      );
-  }
-};

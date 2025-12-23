@@ -1,16 +1,26 @@
 import { useState, useEffect, useCallback } from 'react';
 import { NewsService } from '../services/article.service'; 
 import { Article } from '../types/article'; 
+import { useDebounce } from './useDebounce';
 
 export const useAdminNews = () => {
   const [newsList, setNewsList] = useState<Article[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshKey, setRefreshKey] = useState(0);
+  const [pagination, setPagination] = useState({
+    page: 1,
+    limit: 10,
+    totalPages: 1,
+    totalItems: 0,
+  });
 
+  const [filters, setFilters] = useState({
+    title: '',
+    type: 'all'
+  });
+
+  const debouncedSearchTerm = useDebounce(filters.title, 500);
   // --- STATE PHÂN TRANG ---
-  const [page, setPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
-  const [totalItems, setTotalItems] = useState(0);
 
   // --- MODAL & EDITING ITEM ---
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -22,32 +32,28 @@ export const useAdminNews = () => {
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
 
-  const [filters, setFilters] = useState({
-    search: '',
-    type: 'all || news || article_notice || auction_report || legal_document'
-  });
 
   // --- FETCH DATA ---
   const fetchNews = useCallback(async () => {
     try {
       setLoading(true);
       const data = await NewsService.getAll({ 
-        page: page, 
+        page: pagination.page, 
         limit: 10, 
         sortOrder: 'desc',
-        sortBy: 'createdAt' 
+        sortBy: 'createdAt',
+        ...(debouncedSearchTerm && { title: debouncedSearchTerm }),
+        ...(filters.type && filters.type !== 'all' && { type: filters.type }),
       });
-
-      // if (filters.search) params.title = filters.search; 
-      // if (filters.type !== 'all') params.type = filters.type;
-
-      // const res = await NewsService.getAll(params);
 
       if (data.success) {
         setNewsList(data.data);
         if (data.meta) {
-            setTotalPages(data.meta.totalPages);
-            setTotalItems(data.meta.total);
+            setPagination(prev => ({
+                ...prev,
+                totalPages: data.meta.totalPages,
+                totalItems: data.meta.totalItems
+            }));
         }
       }
     } catch (error) {
@@ -55,7 +61,11 @@ export const useAdminNews = () => {
     } finally {
       setLoading(false);
     }
-  }, [refreshKey, page]);
+  }, [pagination.page, pagination.limit, debouncedSearchTerm, filters.title, filters.type]);
+
+  useEffect(() => {
+    setPagination(prev => ({ ...prev, page: 1 }));
+  }, [debouncedSearchTerm, filters.title, filters.type]);
 
   useEffect(() => {
     fetchNews();
@@ -132,24 +142,15 @@ export const useAdminNews = () => {
     }
   };
 
-  // Xử lý tìm kiếm (Debounce đơn giản)
-  // const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-  //   // Reset về trang 1 khi tìm kiếm
-  //   pagination.setPage(1); 
-  //   setFilters((prev: any) => ({ ...prev, search: e.target.value }));
-  // };
-
-  // const handleTypeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-  //   pagination.setPage(1);
-  //   setFilters((prev: any) => ({ ...prev, type: e.target.value }));
-  // };
 
   // --- RETURN ---
   return {
     newsList,
     loading,
-    pagination: { page, totalPages, totalItems, setPage },
+    pagination,
+    setPagination,
     filters,
+    setFilters,
     isModalOpen,
     setIsModalOpen,
     sidebarOpen,
@@ -162,7 +163,6 @@ export const useAdminNews = () => {
     setDeleteId,
     isDeleting,
     setIsDeleting,
-    setFilters,
     getNewsDetail,
     deleteNews,
     createNews,
@@ -170,8 +170,6 @@ export const useAdminNews = () => {
     handleCreateClick,
     handleEditClick,
     handleDeleteClick,
-    // handleSearchChange,
-    // handleTypeChange,
     handleConfirmDelete,
     refreshData: () => setRefreshKey(prev => prev + 1)
   };

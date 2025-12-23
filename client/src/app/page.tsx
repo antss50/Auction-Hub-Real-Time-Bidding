@@ -11,7 +11,7 @@ import Footer from "../components/Footer";
 import { AuctionItem, ApiAuctionItem, AuctionResponse } from "../types/auction";
 import apiClient from "@auction-hub/axios";
 import { Article } from "../types/article";
-import { formatCurrency, getImageUrl } from "./utils/format";
+import { getImageUrl } from "./utils/format";
 
 export default function HomePage() {
   const [loading, setLoading] = useState(true);
@@ -40,7 +40,7 @@ export default function HomePage() {
         minute: "2-digit",
       }),
       image: getImageUrl(item.images),
-      location: "TP Hồ Chí Minh"
+      location: ""
     };
   };
 
