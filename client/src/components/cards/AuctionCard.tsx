@@ -5,7 +5,7 @@ import { formatCurrency, getImageUrl } from "../../app/utils/format";
 
 export const AuctionCard = ({ item }: { item: AuctionItem }) => {
   // Xử lý ảnh an toàn ngay tại đây
-  const imageUrl = getImageUrl(item.image); 
+  const imageUrl = getImageUrl(item.images); 
 
   return (
     <Link
@@ -31,10 +31,10 @@ export const AuctionCard = ({ item }: { item: AuctionItem }) => {
             Giá khởi điểm: <span className="font-semibold">{formatCurrency(item.startingPrice)}</span>
           </p>
           <p className="flex justify-between text-sm font-light">
-            Tiền đặt trước: <span className="font-semibold">{formatCurrency(item.deposit)}</span>
+            Tiền đặt trước: <span className="font-semibold">{formatCurrency(item.depositAmountRequired)}</span>
           </p>
           <p className="flex justify-between text-sm font-light">
-            Thời gian: <span className="font-semibold">{item.time}</span>
+            Thời gian: <span className="font-semibold">{item.auctionStartAt}</span>
           </p>
         </div>
       </div>

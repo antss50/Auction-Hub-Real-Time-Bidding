@@ -8,12 +8,15 @@ import SectionGrid from "../components/SectionGrid";
 import Topbar from "../components/Topbar";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
-import { AuctionItem, ApiAuctionItem, AuctionResponse } from "../types/auction";
+import { AuctionItem, AuctionResponse } from "../types/auction";
 import apiClient from "@auction-hub/axios";
 import { Article } from "../types/article";
-import { getImageUrl } from "./utils/format";
+import { formatCurrency, getImageUrl } from "./utils/format";
+import Link from "next/link";
+import { useAuth } from "../contexts/AuthContext";
 
 export default function HomePage() {
+  const { isAuthenticated } = useAuth();
   const [loading, setLoading] = useState(true);
   const [time, setTime] = useState("");
   const [auctions, setAuctions] = useState<AuctionResponse>({
@@ -23,15 +26,15 @@ export default function HomePage() {
   });
   const [articles, setArticles] = useState<Article[]>([]);
 
-  const mapAuction = (item: ApiAuctionItem): AuctionItem => {
+  const mapAuction = (item: AuctionItem) => {
     const start = new Date(item.auctionStartAt);
 
     return {
       id: item.id,
       name: item.name,
       startingPrice: Number(item.startingPrice),
-      deposit: Number(item.depositAmountRequired),
-      time: start.toLocaleString("vi-VN", {
+      depositAmountRequired: Number(item.depositAmountRequired),
+      auctionStartAt: start.toLocaleString("vi-VN", {
         hour12: false,
         day: "2-digit",
         month: "2-digit",
@@ -39,34 +42,45 @@ export default function HomePage() {
         hour: "2-digit",
         minute: "2-digit",
       }),
-      image: getImageUrl(item.images),
-      location: ""
+      images:  Object(getImageUrl(item.images)),
     };
   };
 
   const fetchByStatus = async (status: "now" | "upcoming" | "completed") => {
-    const res = await apiClient.get("/auctions", {
-      params: { status, limit: 8, page: 1 },
+    try {
+      const res = await apiClient.get("/auctions", {
+      params: { 
+        status, 
+        limit: 8, 
+        page: 1 },
     });
-
-    return (res.data.data || []).map(mapAuction);
+    if (res.data.success && res.data.data) {
+        return res.data.data.map((auctions: any) => ({
+          ...auctions,
+          image: getImageUrl(auctions.image)
+        }));
+      }
+    } catch (error) {
+      console.error("Lỗi tải tin tức:", error);
+    }
+    return [];
   };
 
   const fetchArticles = async () => {
     try {
       const res = await apiClient.get("/articles", {
-        params: { 
-            limit: 4, 
-            page: 1, 
-            sortBy: 'createdAt', 
-            sortOrder: 'desc' 
+        params: {
+          limit: 4,
+          page: 1,
+          sortBy: 'createdAt',
+          sortOrder: 'desc'
         },
       });
       console.log("Url of image:", res.data.data.map((item: any) => getImageUrl(item.image)));
       if (res.data.success && res.data.data) {
         return res.data.data.map((article: any) => ({
-            ...article,
-            image: getImageUrl(article.image)
+          ...article,
+          image: getImageUrl(article.image)
         }));
       }
     } catch (error) {
@@ -151,14 +165,18 @@ export default function HomePage() {
             công nghệ hiện đại.
           </p>
           <div className="flex justify-start gap-4">
-            <Button className="bg-yellow-500 hover:bg-yellow-600 text-white font-semibold px-8 py-6 rounded-lg shadow-lg cursor-pointer">
-              Đăng ký ngay
-            </Button>
+            {!isAuthenticated && (
+              <Button className="bg-yellow-500 hover:bg-yellow-600 text-white font-semibold px-8 py-6 rounded-lg shadow-lg cursor-pointer">
+                Đăng ký ngay
+              </Button>
+            )}
+
             <Button
+              asChild
               variant="outline"
               className="bg-gray-200 hover:bg-gray-300 text-black font-semibold px-8 py-6 rounded-lg cursor-pointer"
             >
-              Tìm hiểu thêm
+              <Link href="/auctions">Tìm hiểu thêm</Link>
             </Button>
           </div>
         </div>
@@ -196,9 +214,9 @@ export default function HomePage() {
         {articles.length > 0 && (
           <SectionBlock
             title="📰 Tin tức mới nhất"
-            type="" 
+            type=""
             items={articles}
-            linkPrefix="/articles" 
+            linkPrefix="/articles"
             isArticle={true}
           />
         )}
@@ -212,17 +230,17 @@ export default function HomePage() {
 const SectionBlock = ({ title, type, items, linkPrefix, isArticle = false }: any) => {
   const seeAllLink = isArticle ? linkPrefix : `${linkPrefix}${type}`;
   return (
-  <>
-    <div className="flex items-center justify-between mt-10">
-      <h2 className="text-2xl font-bold">{title}</h2>
-      <a href={seeAllLink} className="text-lg">
-        <i>
-          <u>Xem tất cả</u>
-        </i>
-      </a>
-    </div>
+    <>
+      <div className="flex items-center justify-between mt-10">
+        <h2 className="text-2xl font-bold">{title}</h2>
+        <a href={seeAllLink} className="text-lg">
+          <i>
+            <u>Xem tất cả</u>
+          </i>
+        </a>
+      </div>
 
-    <SectionGrid items={items} />
-  </>
+      <SectionGrid items={items} />
+    </>
   )
 };

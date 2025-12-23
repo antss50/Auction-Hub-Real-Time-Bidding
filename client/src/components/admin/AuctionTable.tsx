@@ -13,9 +13,9 @@ interface Props {
     totalItems: number;
     setPage: (page: number) => void;
   };
-  onEdit: (id: AuctionItem) => void;
+  onEdit: (id: ApiAuctionItem) => void;
   onDelete: (id: string) => void;
-  onViewDetail: (item: AuctionItem) => void;
+  onViewDetail: (item: ApiAuctionItem) => void;
 }
 
 export const AuctionsTable = ({ auctions, loading, onEdit, onDelete, pagination, onViewDetail }: Props) => {

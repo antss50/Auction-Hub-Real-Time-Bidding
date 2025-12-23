@@ -1,18 +1,7 @@
 "use client";
 
 import { useState } from "react";
-
-type Owner = {
-    id: string;
-    fullName: string;
-    email: string;
-    avatarUrl: string | null;
-};
-
-type Attachment = {
-    url: string;
-    type: 'document' | 'video';
-};
+import { Owner, Attachment } from "../types/auction";
 
 export default function AuctionTabs({
     description,
@@ -124,10 +113,16 @@ export default function AuctionTabs({
                         <h3 className="text-lg font-semibold mb-4">Thông tin đơn vị tổ chức</h3>
                         <div className="border border-gray-200 p-4 rounded-lg">
                             <p className="text-gray-600 mb-1">Họ tên:</p>
-                            <p className="font-bold text-gray-800 mb-3">{owner.fullName}</p>
+                            <p className="font-bold text-gray-800 mb-3">{owner.name}</p>
 
                             <p className="text-gray-600 mb-1">Email:</p>
                             <p className="font-bold text-gray-800 mb-3">{owner.email}</p>
+
+                            <p className="text-gray-600 mb-1">Phone:</p>
+                            <p className="font-bold text-gray-800 mb-3">{owner.phone}</p>
+
+                            <p className="text-gray-600 mb-1">Organization:</p>
+                            <p className="font-bold text-gray-800 mb-3">{owner.organization}</p>
                         </div>
                     </div>
                 )}

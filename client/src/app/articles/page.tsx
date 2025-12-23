@@ -11,6 +11,7 @@ import Footer from "../../components/Footer";
 import SectionGrid from "../../components/SectionGrid";
 import { Button } from "@auction-hub/shacdn-ui/button";
 import { Input } from "@auction-hub/shacdn-ui/input";
+import { getImageUrl } from "../utils/format"
 
 function ArticlesContent() {
   const router = useRouter();
@@ -24,14 +25,6 @@ function ArticlesContent() {
   const page = Number(searchParams.get("page")) || 1;
   const search = searchParams.get("search") || "";
   const type = searchParams.get("type") || "all";
-
-  const getImageUrl = (imgData: any): string => {
-    if (!imgData) return "/images/auction-logo.jpg";
-    if (typeof imgData === 'object' && imgData.url) return imgData.url; 
-    if (Array.isArray(imgData)) return imgData.length > 0 ? imgData[0].url : "/images/auction-logo.jpg";
-    
-    return "/images/auction-logo.jpg";
-  };
 
   // Fetch dữ liệu
   useEffect(() => {

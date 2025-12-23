@@ -1,23 +1,33 @@
-// src/types/auction.ts
+// export interface ApiAuctionItem {
+//   id: string;
+//   name: string;
+//   startingPrice: string;       
+//   depositAmountRequired: string; 
+//   auctionStartAt: string;
+//   images: any;
+// }
 
-export interface ApiAuctionItem {
-  id: string;
-  name: string;
-  startingPrice: string;       
-  depositAmountRequired: string; 
-  auctionStartAt: string;
-  images: any;
-}
+// export interface AuctionItem {
+//   id: string;
+//   name: string;
+//   startingPrice: number;       
+//   deposit: number;             
+//   time: string;                
+//   image: string;
+//   status?: "now" | "upcoming" | "completed"; 
+//   location: string;            
+// }
 
 export interface AuctionItem {
   id: string;
   name: string;
   startingPrice: number;       
-  deposit: number;             
-  time: string;                
-  images: string;
-  status?: "now" | "upcoming" | "completed"; 
-  location: string;            
+  depositAmountRequired: number;             
+  auctionStartAt: string;                
+  images: {
+    publicId: string,
+    url: string
+  };
 }
 
 export interface AuctionResponse {
@@ -49,16 +59,16 @@ export interface AuctionDetail {
     bidIncrement: string;
     depositAmountRequired: string;
     saleFee: string;
-    owner: Owner;
+    propertyOwner: Owner;
     images: { url: string; sortOrder: number }[];
     attachments: Attachment[];
 };
 
 export interface Owner {
-    id: string;
-    fullName: string;
+    name: string;
     email: string;
-    avatarUrl: string | null;
+    phone: string;
+    organization: string;
 };
 
 export interface Attachment {
@@ -92,38 +102,4 @@ export interface PaymentVerificationResult {
     status: string; 
     message: string;
     contractId?: string; // Dùng cho bước thanh toán cuối cùng (Winner)
-}
-
-export interface Bid {
-    id: string;
-  amount: number;
-  userId: string;
-  userName: string; 
-  createdAt: string;
-  isDenied?: boolean;       
-  deniedReason?: string;     
-  isWinningBid?: boolean;
-}
-
-export interface AuctionEvaluation {
-  currentStatus: string;
-  recommendedStatus: string;
-  hasWinner: boolean;
-  totalBids: number;
-  winningAmount: string;
-  winner?: {
-    userId: string;
-    participantId: string;
-    bidAmount: string;
-  };
-}
-
-export interface AuditLog {
-  id: string;
-  auctionId: string;
-  action: string;
-  performedBy: string;
-  performedAt: string;
-  reason?: string;
-  metadata?: any;
 }

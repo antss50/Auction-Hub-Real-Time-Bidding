@@ -10,8 +10,8 @@ export default function ConnectSection() {
     };
 
     return (
-        <section className="bg-gray-50 py-12 px-4">
-            <div className="max-w-5xl mx-auto bg-[#7A2320] rounded-3xl text-center text-white py-12 px-6 shadow-md">
+        <section className="bg-gray-50 py-6 px-4">
+            <div className="max-w-7xl mx-auto bg-[#7A2320] rounded-3xl text-center text-white py-12 px-6 shadow-md">
                 <h2 className="text-2xl font-bold mb-2">Kết nối với chúng tôi</h2>
                 <p className="text-sm text-gray-200 mb-8">
                     Để nắm thông tin kịp thời và hỗ trợ nhanh nhất
