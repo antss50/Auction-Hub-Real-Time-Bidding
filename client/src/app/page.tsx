@@ -8,7 +8,7 @@ import SectionGrid from "../components/SectionGrid";
 import Topbar from "../components/Topbar";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
-import { AuctionItem, ApiAuctionItem, AuctionResponse } from "../types/auction";
+import { AuctionItem, AuctionResponse } from "../types/auction";
 import apiClient from "@auction-hub/axios";
 import { Article } from "../types/article";
 import { formatCurrency, getImageUrl } from "./utils/format";
@@ -26,15 +26,15 @@ export default function HomePage() {
   });
   const [articles, setArticles] = useState<Article[]>([]);
 
-  const mapAuction = (item: ApiAuctionItem): AuctionItem => {
+  const mapAuction = (item: AuctionItem) => {
     const start = new Date(item.auctionStartAt);
 
     return {
       id: item.id,
       name: item.name,
       startingPrice: Number(item.startingPrice),
-      deposit: Number(item.depositAmountRequired),
-      time: start.toLocaleString("vi-VN", {
+      depositAmountRequired: Number(item.depositAmountRequired),
+      auctionStartAt: start.toLocaleString("vi-VN", {
         hour12: false,
         day: "2-digit",
         month: "2-digit",
@@ -42,17 +42,28 @@ export default function HomePage() {
         hour: "2-digit",
         minute: "2-digit",
       }),
-      image: getImageUrl(item.images),
-      location: "TP Hồ Chí Minh"
+      images:  Object(getImageUrl(item.images)),
     };
   };
 
   const fetchByStatus = async (status: "now" | "upcoming" | "completed") => {
-    const res = await apiClient.get("/auctions", {
-      params: { status, limit: 8, page: 1 },
+    try {
+      const res = await apiClient.get("/auctions", {
+      params: { 
+        status, 
+        limit: 8, 
+        page: 1 },
     });
-
-    return (res.data.data || []).map(mapAuction);
+    if (res.data.success && res.data.data) {
+        return res.data.data.map((auctions: any) => ({
+          ...auctions,
+          image: getImageUrl(auctions.image)
+        }));
+      }
+    } catch (error) {
+      console.error("Lỗi tải tin tức:", error);
+    }
+    return [];
   };
 
   const fetchArticles = async () => {

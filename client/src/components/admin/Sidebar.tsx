@@ -1,5 +1,6 @@
 import {Gavel, LayoutDashboard, LogOut, Settings, Users } from 'lucide-react';
 import { usePathname } from "next/navigation";
+import Link from 'next/link';
 
 export default function Sidebar({ sidebarOpen }: { sidebarOpen: boolean }) {
     return (
@@ -14,7 +15,8 @@ export default function Sidebar({ sidebarOpen }: { sidebarOpen: boolean }) {
             <NavItem href = "/dashboard" icon={<LayoutDashboard size={20} />} label="Trang chủ" isOpen={sidebarOpen}  className = "active:bg-[#FFC107]" />
             <NavItem href = "/admin/auctions" icon={<Gavel size={20} />} label="Quản lý Tài sản" isOpen={sidebarOpen} className = "active:bg-[#FFC107]" />
             <NavItem href = "/admin/articles" icon={<Users size={20} />} label="Tin tức" isOpen={sidebarOpen} className = "active:bg-[#FFC107]" />
-            <NavItem icon={<Settings size={20} />} label="Cài đặt hệ thống" isOpen={sidebarOpen} className = "active:bg-[#FFC107]" />
+            <NavItem href = "/admin/settings" icon={<Settings size={20} />} label="Cài đặt hệ thống" isOpen={sidebarOpen} className = "active:bg-[#FFC107]" />
+            <NavItem href = "/admin/registration" icon={<Users size={20} />} label="Quản lý trạng thái" isOpen={sidebarOpen} className = "active:bg-[#FFC107]" />
         </nav>
 
         {/* Footer Sidebar */}
@@ -32,7 +34,7 @@ const NavItem = ({ href, icon, label, isOpen } : any) => {
   const isActive = pathname === href;
 
   return (
-    <a
+    <Link
       href={href}
       className={`
         flex items-center gap-3 px-3 py-3 rounded-lg cursor-pointer transition-colors
@@ -41,6 +43,6 @@ const NavItem = ({ href, icon, label, isOpen } : any) => {
     >
       {icon}
       {isOpen && <span className="text-sm">{label}</span>}
-    </a>
+    </Link>
   );
 };

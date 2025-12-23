@@ -3,7 +3,18 @@ import apiClient from '@auction-hub/axios'; // Hoặc dùng fetch thường
 export const AuctionService = {
   // Lấy danh sách (có phân trang/lọc)
   getAll: async (params?: any) => {
-    const res = await apiClient.get('/auctions', { params });
+    const cleanParams = { ...params};
+
+    if (!cleanParams || cleanParams.status === 'all') {
+      delete cleanParams.status;
+    }
+    if (cleanParams.status === 'live') {
+      cleanParams.status = 'now';
+    }
+    if (cleanParams.status === 'scheduled') {
+      cleanParams.status = 'upcoming';
+    }
+    const res = await apiClient.get('/auctions', { params: cleanParams });
     return res.data;
   },
 

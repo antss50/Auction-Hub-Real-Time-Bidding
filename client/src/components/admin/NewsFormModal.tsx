@@ -10,11 +10,7 @@ interface Props {
   initialData?: any;
 }
 
-// Định nghĩa kiểu dữ liệu ảnh cho Tin tức (1 ảnh duy nhất)
-interface NewsImage {
-  url: string;
-  publicId: string | null;
-}
+// Định nghĩa kiểu dữ liệu ảnh cho Tin tức
 
 export const NewsFormModal = ({ isOpen, onClose, onSubmit, initialData }: Props) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -24,41 +20,33 @@ export const NewsFormModal = ({ isOpen, onClose, onSubmit, initialData }: Props)
   const [formData, setFormData] = useState({
     title: '',
     description: '', 
-    content: '',     
+    content: '',     // Nội dung chi tiết (HTML)
     author: '',
     type: 'news',
-    image: null as NewsImage | null, 
+    image: [] as { publicId:string | null; url: string }[], 
   });
 
-  // --- 1. INITIALIZE DATA ---
+  // --- 1. INITIALIZE DATA  ---
   useEffect(() => {
     if (isOpen && initialData) {
-      // Logic map dữ liệu khi Sửa
-      let mappedImage = null;
-      if (initialData.image) {
-          // Xử lý trường hợp image từ API có thể là string hoặc object
-          if (typeof initialData.image === 'string') {
-              mappedImage = { url: initialData.image, publicId: null };
-          } else {
-              mappedImage = initialData.image;
-          }
-      }
 
       setFormData({
         title: initialData.title || '',
         description: initialData.description || '',
-        content: initialData.content || '',
+        content: initialData.content || '', 
         author: initialData.author || '',
         type: initialData.type || 'news',
-        image: mappedImage
+        image: initialData.image || []
       });
     } else if (isOpen && !initialData) {
       // Reset form khi Tạo mới
-      setFormData({
-        title: '', description: '', content: '', author: '', type: 'news', image: null
-      });
+      resetForm();
     }
   }, [isOpen, initialData]);
+
+  const resetForm = () => {
+    setFormData(prev => ({ ...prev, images: [] }));
+  };
 
   // --- 2. HANDLERS ---
 
@@ -73,28 +61,30 @@ export const NewsFormModal = ({ isOpen, onClose, onSubmit, initialData }: Props)
       // Upload lên server
       const uploadedFiles = await UploadService.uploadFiles([file]);
       
-      if (uploadedFiles && uploadedFiles.length > 0) {
-        const fileData = uploadedFiles[0];
-        // Lưu ảnh mới vào state (Ghi đè ảnh cũ)
-        setFormData(prev => ({
-            ...prev,
-            image: { 
-                url: fileData.url, 
-                publicId: fileData.publicId || fileData.id || "temp-id" 
-            }
-        }));
-      }
+      const newImages = uploadedFiles.map((file: any) => ({
+        publicId: file.publicId || file.url || "temp-id-" + Date.now(), 
+        url: file.url 
+      }));
+
+      console.log("Uploaded images:", newImages);
+      setFormData(prev => ({
+        ...prev,
+        images: [...prev.image, ...newImages]
+      }));
     } catch (error) {
       console.error("Upload failed:", error);
       alert("Lỗi tải ảnh lên!");
     } finally {
       setIsUploading(false);
-      e.target.value = ''; // Reset input file
+      e.target.value = ''; 
     }
   };
 
-  const removeImage = () => {
-    setFormData(prev => ({ ...prev, image: null }));
+  const removeImage = (indexToRemove: number) => {
+    setFormData(prev => ({
+      ...prev,
+      images: prev.image.filter((_, index) => index !== indexToRemove)
+    }));
   };
 
   // Xử lý Submit Form
@@ -111,14 +101,16 @@ export const NewsFormModal = ({ isOpen, onClose, onSubmit, initialData }: Props)
       content: formData.content,
       author: formData.author,
       type: formData.type,
-      // Gửi object image (hoặc null nếu backend chấp nhận, hoặc bỏ qua nếu null)
-      image: formData.image ? formData.image : null, 
+      image: formData.image, // Gửi object image lên server
     };
 
     const success = await onSubmit(payload);
     setIsSubmitting(false);
     
-    if (success) onClose();
+    if (success) {
+        resetForm();
+        onClose();
+    }
   };
 
   // --- 3. RENDER ---
@@ -168,10 +160,12 @@ export const NewsFormModal = ({ isOpen, onClose, onSubmit, initialData }: Props)
 
                     <div className="flex-1 flex flex-col min-h-[400px]">
                         <label className="block font-semibold text-gray-700 mb-2">Nội dung chi tiết</label>
-                        <div className="flex-1 border rounded-lg overflow-hidden">
+                        <div className="flex-1 border rounded-lg overflow-hidden flex flex-col">
+                            {/* Truyền content vào RichTextEditor */}
                             <RichTextEditor 
                                 value={formData.content} 
-                                onChange={(html : any) => setFormData({ ...formData, content: html })} 
+                                onChange={(html) => setFormData(prev => ({ ...prev, content: html }))} 
+                                className="h-full"
                             />
                         </div>
                     </div>
@@ -207,11 +201,19 @@ export const NewsFormModal = ({ isOpen, onClose, onSubmit, initialData }: Props)
                                 )}
                             </div>
                         ) : (
-                            <div className="relative aspect-video rounded-lg overflow-hidden border border-gray-200 shadow-sm group">
-                                <img src={formData.image.url} alt="cover" className="w-full h-full object-cover" />
+                            <div className="relative aspect-video rounded-lg overflow-hidden border border-gray-200 shadow-sm group bg-white">
+                                {/* Hiển thị ảnh cover */}
+                                <img 
+                                    src={formData.images.url} 
+                                    alt="cover" 
+                                    className="w-full h-full object-cover" 
+                                    onError={(e) => {
+                                        (e.target as HTMLImageElement).src = 'https://via.placeholder.com/300x200?text=Error+Loading+Image';
+                                    }}
+                                />
                                 <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
                                     <button 
-                                        onClick={removeImage}
+                                        onClick={() => removeImage()}
                                         className="bg-red-500 text-white p-2 rounded-full hover:bg-red-600 transition-transform hover:scale-110"
                                         title="Xóa ảnh"
                                     >
@@ -266,7 +268,7 @@ export const NewsFormModal = ({ isOpen, onClose, onSubmit, initialData }: Props)
                 disabled={isSubmitting || isUploading} 
                 className="flex items-center gap-2 px-6 py-2.5 bg-[#FFC107] text-black font-bold rounded-lg hover:bg-yellow-500 shadow-sm hover:shadow transition-all disabled:opacity-70 disabled:cursor-not-allowed"
             >
-                {isSubmitting ? <><Loader2 className="animate-spin" size={20}/> Đang lưu...</> : <><Save size={20}/> Đăng bài</>}
+                {isSubmitting ? <><Loader2 className="animate-spin" size={20}/> Đang lưu...</> : <><Save size={20}/> Lưu thay đổi</>}
             </button>
         </div>
 

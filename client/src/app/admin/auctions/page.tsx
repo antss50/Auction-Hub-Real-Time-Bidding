@@ -7,14 +7,18 @@ import { AuctionsTable } from '../../../components/admin/AuctionTable';
 import { AuctionFormModal } from '../../../components/admin/AuctionModal'; 
 import { ConfirmDeleteModal } from '../../../components/ConfirmDeleteModal';
 import Sidebar from '../../../components/admin/Sidebar';
+import { useRouter } from 'next/navigation';
 
 export default function AdminDashboard() {
   const { 
     auctions, 
     loading, 
+    pagination, 
+    setPagination, 
+    filters, 
+    setFilters,
     createAuction, 
     updateAuction, 
-    pagination, 
     handleEditClick,
     handleCreateClick,
     handleDeleteClick,
@@ -27,7 +31,23 @@ export default function AdminDashboard() {
     isDeleting,
   } = useAdminAuctions();
   
-  const [sidebarOpen, setSidebarOpen] = useState(true);
+
+  const handleStatusChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setFilters(prev => ({ ...prev, status: e.target.value }));
+  };
+
+  const handleTypeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setFilters(prev => ({ ...prev, auctionType: e.target.value }));
+  };
+
+  const handlePageChange = (newPage: number) => {
+    setPagination(prev => ({ ...prev, page: newPage }));
+  };
+
+  const router = useRouter();
+  const handleViewDetail = (item: any) => {
+    router.push(`/admin/auctions/${item.id}`);
+};
 
   // Hàm submit chung cho cả Tạo và Sửa
   const handleFormSubmit = async (formData: any) => {
@@ -36,47 +56,75 @@ export default function AdminDashboard() {
   };
 
   return (
-    <div className="flex h-screen bg-gray-50 font-sans text-gray-800">
-      <Sidebar sidebarOpen={sidebarOpen} />
+    <>
+      {/* Title & Action */}
+        <div className="flex justify-between items-center mb-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900">Quản lý Tài sản</h1>
+          </div>
+          <button onClick={handleCreateClick} className="flex gap-2 bg-[#FFC107] hover:bg-yellow-500 text-black px-4 py-2 rounded font-medium shadow-sm transition-transform active:scale-95">
+            <Plus size={18} /> Tạo phiên đấu giá mới
+          </button>
+        </div>
 
-      <div className="flex-1 flex flex-col overflow-hidden">
-        
-        {/* Header */}
-        <header className="h-16 bg-white border-b flex items-center justify-between px-6 shadow-sm">
-            <div className="flex items-center gap-4">
-                <button onClick={() => setSidebarOpen(!sidebarOpen)} className="p-2 hover:bg-gray-100 rounded text-gray-600">
-                    <Menu size={20} />
-                </button>
-                <h1 className="text-xl font-bold text-gray-800">Quản lý Đấu giá</h1>
-            </div>
-            <div className="flex items-center gap-4">
-                {/* Search Bar */}
-                <div className="relative hidden md:block">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
-                    <input type="text" placeholder="Tìm kiếm..." className="pl-9 pr-4 py-2 border rounded-full text-sm focus:outline-none focus:ring-1 focus:ring-yellow-500 w-64" />
-                </div>
-                <button className="p-2 text-gray-500 hover:bg-gray-100 rounded-full"><Bell size={20} /></button>
-                <div className="w-8 h-8 rounded-full bg-[#FFC107] flex items-center justify-center font-bold text-xs text-black border border-yellow-600">AD</div>
-            </div>
-        </header>
-
-        {/* Dashboard Content */}
-        <main className="flex-1 overflow-y-auto p-6 bg-[#F9FAFB]">
+        {/* --- FILTERS --- */}
+        <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200 flex flex-col md:flex-row gap-4">
             
-            {/* Action Bar */}
-            <div className="flex justify-end mb-4">
-                <button onClick={handleCreateClick} className="flex items-center gap-2 bg-[#FFC107] hover:bg-yellow-500 text-black font-medium px-4 py-2 rounded shadow-sm transition-colors">
-                    <Plus size={18} /> Tạo phiên đấu giá
-                </button>
+            {/* Search Input */}
+            <div className="relative flex-1">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+                <input 
+                    type="text" 
+                    placeholder="Tìm kiếm theo tên tài sản..." 
+                    className="w-full pl-10 pr-4 py-2 border rounded-md focus:ring-2 focus:ring-yellow-500 focus:border-transparent outline-none transition-all"
+                    value={filters.name}
+                    onChange={(e) => setFilters(prev => ({ ...prev, name: e.target.value }))}
+                />
             </div>
+
+            {/* Filter Status */}
+            <div className="w-full md:w-48">
+                <select 
+                    className="w-full border rounded-md px-4 py-2 focus:ring-2 focus:ring-yellow-500 outline-none bg-white cursor-pointer"
+                    value={filters.status}
+                    onChange={handleStatusChange}
+                >
+                    
+                    <option value="completed">Đã diễn ra</option>
+                    <option value="now">Đang diễn ra</option>
+                    <option value="upcoming">Sắp diễn ra</option>
+                </select>
+            </div>
+
+            {/* Filter Asset Type */}
+            <div className="w-full md:w-56">
+                <select 
+                    className="w-full border rounded-md px-4 py-2 focus:ring-2 focus:ring-yellow-500 outline-none bg-white cursor-pointer"
+                    value={filters.auctionType}
+                    onChange={handleTypeChange}
+                >
+                    <option value="all">Tất cả loại tài sản</option>
+                    <option value="secured_asset">Tài sản bảo đảm</option>
+                    <option value="state_asset">Tài sản công</option>
+                    <option value="enforcement_asset">Thi hành án</option> 
+                    <option value="land_use_rights">Quyền sử dụng đất</option>
+                    <option value="administrative_violation_asset">Vi phạm hành chính</option>
+                    <option value="other_asset">Tài sản khác</option>
+                </select>
+            </div>
+        </div>
 
             {/* --- TABLE & PAGINATION --- */}
             <AuctionsTable 
                 auctions={auctions} 
                 loading={loading}
-                pagination={pagination} // Truyền props phân trang xuống
+                pagination={{
+                  ...pagination,
+                  setPage: handlePageChange // Map function setPage
+                }} 
                 onEdit={handleEditClick}
                 onDelete={handleDeleteClick} 
+                onViewDetail={handleViewDetail}
             />
             
             {/* Modal Form */}
@@ -95,8 +143,8 @@ export default function AdminDashboard() {
                 title="Xóa phiên đấu giá?"
                 message="Bạn có chắc chắn muốn xóa phiên đấu giá này không? Dữ liệu sẽ không thể khôi phục."
             />
-        </main> 
-      </div>
-    </div>
+       
+    
+    </>
   );    
 }

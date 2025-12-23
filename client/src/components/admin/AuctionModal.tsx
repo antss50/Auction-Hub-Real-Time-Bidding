@@ -2,6 +2,10 @@ import { Loader2, Save, Upload, X } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { UploadService } from '../../services/upload.service';
 import { LocationService } from '../../services/location.service';
+import { getImageUrl } from '../../app/utils/format';
+import RichTextEditor  from '../admin/editor/RichTextEditor';
+
+import Image from 'next/image';
 
 interface Props {
   isOpen: boolean;
@@ -106,7 +110,7 @@ export const AuctionFormModal = ({ isOpen, onClose, onSubmit, initialData }: Pro
         ownerOrg: initialData.propertyOwner?.organization || '',
 
         images: initialData.images?.map((img: any) => ({
-          publicId: img.publicId || null, 
+          publicId: img.publicId || img.url, 
           url: img.url
         })) || []
       });
@@ -141,7 +145,9 @@ export const AuctionFormModal = ({ isOpen, onClose, onSubmit, initialData }: Pro
 
   const formatDateForInput = (isoString: string) => {
     if (!isoString) return '';
-    return new Date(isoString).toISOString().slice(0, 16);
+    const date = new Date(isoString);
+    const localDate = new Date(date.getTime() - (date.getTimezoneOffset() * 60000));
+    return localDate.toISOString().slice(0, 16);
   };
 
   // Helper: Convert input date sang ISO string cho API
@@ -189,6 +195,7 @@ export const AuctionFormModal = ({ isOpen, onClose, onSubmit, initialData }: Pro
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
+
     const payload = {
       code: formData.code,
       name: formData.name,
@@ -223,7 +230,8 @@ export const AuctionFormModal = ({ isOpen, onClose, onSubmit, initialData }: Pro
         email: formData.ownerEmail,
         phone: formData.ownerPhone,
         organization: formData.ownerOrg
-      }
+      },
+      // status: computedStatus
     };
 
     const success = await onSubmit(payload);
@@ -284,7 +292,7 @@ export const AuctionFormModal = ({ isOpen, onClose, onSubmit, initialData }: Pro
                     <div className="mt-4 grid grid-cols-4 sm:grid-cols-5 gap-4">
                         {formData.images.map((img, idx) => (
                             <div key={idx} className="relative group aspect-square rounded-md overflow-hidden border bg-gray-100">
-                                <img src={img.url} alt="preview" className="w-full h-full object-cover" />
+                                <Image src={getImageUrl(img.url)} alt="preview" width={100} height={100} className="w-full h-full object-cover" />
                                 <button
                                     type="button"
                                     onClick={() => removeImage(idx)}
@@ -322,8 +330,11 @@ export const AuctionFormModal = ({ isOpen, onClose, onSubmit, initialData }: Pro
             </div>
             <div className="md:col-span-2">
               <label className="block text-sm font-medium text-gray-700 mb-1">Mô tả tài sản</label>
-              <textarea rows={3} className="w-full border p-2 rounded"
-                value={formData.assetDescription} onChange={e => setFormData({...formData, assetDescription: e.target.value})} />
+              <RichTextEditor
+                value={formData.assetDescription}
+                onChange={(html) => setFormData({ ...formData, assetDescription: html })}
+                className="h-[300px]" // Custom height for this modal
+              />
             </div>
 
             {/* === NHÓM 2: TÀI CHÍNH === */}

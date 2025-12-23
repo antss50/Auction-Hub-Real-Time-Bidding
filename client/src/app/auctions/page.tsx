@@ -3,7 +3,7 @@
 
 import { useSearchParams, useRouter } from "next/navigation";
 import { useEffect, useState, Suspense } from "react";
-import { ApiAuctionItem, AuctionItem } from "../../types/auction";
+import { AuctionItem } from "../../types/auction";
 import Topbar from "../../components/Topbar";
 import Navbar from "../../components/Navbar";
 import Footer from "../../components/Footer";
@@ -72,7 +72,6 @@ function AuctionsContent() {
   const searchParams = useSearchParams();
 
   const statusParam = searchParams.get("type") as "now" | "upcoming" | "completed" | null;
-
   const pageParam = Number(searchParams.get("page") || 1);
 
   const [page, setPage] = useState(pageParam);
@@ -82,12 +81,12 @@ function AuctionsContent() {
 
   const [priceRange, setPriceRange] = useState<[number, number]>([0, 9999999999999]);
 
-  const mapAuction = (item: ApiAuctionItem): AuctionItem => ({
+  const mapAuction = (item: AuctionItem): AuctionItem => ({
     id: item.id,
     name: item.name,
     startingPrice: Number(item.startingPrice),
-    deposit: Number(item.depositAmountRequired),
-    time: new Date(item.auctionStartAt).toLocaleString("vi-VN", {
+    depositAmountRequired: Number(item.depositAmountRequired),
+    auctionStartAt: new Date(item.auctionStartAt).toLocaleString("vi-VN", {
       hour12: false,
       day: "2-digit",
       month: "2-digit",
@@ -95,29 +94,27 @@ function AuctionsContent() {
       hour: "2-digit",
       minute: "2-digit",
     }),
-    image: getImageUrl(item.images),
-    location: "TP Hồ Chí Minh",
-    status: statusParam!,
+    images: item.images,
   });
 
   const fetchAuctions = async () => {
     try {
-      const params: any = {
+      const params = {
         page,
         limit: PAGE_SIZE,
         sortBy: "createdAt",
         sortOrder: "desc",
       };
 
-      if (statusParam) params.status = statusParam;
 
       const res = await apiClient.get("/auctions", { params });
 
       if (res.data?.success) {
         setTotalPages(res.data.meta?.totalPages || 1);
-        const raw: ApiAuctionItem[] = res.data.data || [];
+        const raw: AuctionItem[] = res.data.data || [];
 
         setAuctions(raw.map(mapAuction));
+        console.log(auctions)
 
 
       }

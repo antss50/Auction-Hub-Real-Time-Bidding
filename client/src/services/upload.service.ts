@@ -8,7 +8,7 @@ export const UploadService = {
     });
 
     try {
-      const res = await apiClient.post('/api/files/uploads', formData, {
+      const res = await apiClient.post('/files/uploads', formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
