@@ -132,7 +132,7 @@ export default function AuctionDetailPage() {
             const res = await submitDeposit({
                 registrationId: registrationId,
                 auctionId: id,
-                amount: Number(auction.depositAmountRequired) // Lấy amount từ auction
+                amount: Number(auction.depositAmountRequired) + Number(auction.saleFee) // Lấy amount từ auction
             });
 
             if (res) {
