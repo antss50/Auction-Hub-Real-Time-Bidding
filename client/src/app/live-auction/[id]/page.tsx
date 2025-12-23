@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from 'react';
-import { useParams, useRouter } from "next/navigation";
+import { useParams, useRouter, notFound } from "next/navigation";
 import Image from "next/image";
 import { io, Socket } from 'socket.io-client';
 import Topbar from "../../../components/Topbar";
@@ -11,6 +11,10 @@ import { placeManualBid } from '../../../services/auctionsService';
 import { CountdownTimer } from '../../../components/CountdownTimer';
 import { toast } from "sonner";
 import Cookies from 'js-cookie';
+import {
+    getAuctionById,
+} from '../../../services/auctionsService';
+import { AuctionDetail } from '../../../types/auction';
 
 interface BidHistoryItem {
     bidId: string;
@@ -49,9 +53,24 @@ export default function LiveAuctionPage() {
     const [isAutoMode, setIsAutoMode] = useState(true); // Chế độ tự động tăng giá
     const [isBidding, setIsBidding] = useState(false);
     const [isConnected, setIsConnected] = useState(false);
+    const [auction, setAuction] = useState<AuctionDetail | null>(null);
+    const [isLoading, setIsLoading] = useState(true);
+
+    const loadData = async () => {
+        if (!id) return;
+        try {
+            const auctionData = await getAuctionById(id);
+            setAuction(auctionData);
+        } catch (error) {
+            console.error(error);
+        } finally {
+            setIsLoading(false);
+        }
+    };
 
     // --- SOCKET CONNECTION ---
     useEffect(() => {
+        loadData();
         const token = Cookies.get('access_token');
 
         if (!token) {
@@ -60,7 +79,7 @@ export default function LiveAuctionPage() {
             return;
         }
 
-        const newSocket = io('http://localhost:3000/bidding', {
+        const newSocket = io('https://auction-hub-kc24.onrender.com/bidding', {
             auth: {
                 token: token // <--- BẮT BUỘC THEO GUIDE
             },
@@ -235,6 +254,9 @@ export default function LiveAuctionPage() {
         return <div className="min-h-screen flex items-center justify-center text-xl">Đang kết nối vào phòng đấu giá...</div>;
     }
 
+    if (isLoading) return <div className="min-h-screen pt-20 text-center">Đang tải...</div>;
+    if (!auction) return notFound();
+
     return (
         <main className="min-h-screen font-sans bg-gray-50">
             <Topbar />
@@ -292,12 +314,7 @@ export default function LiveAuctionPage() {
                         {/* Product Image */}
                         <div className="relative w-full h-[500px] bg-gray-200 rounded-xl overflow-hidden shadow-inner">
                             {/* Bạn có thể lấy ảnh từ API detail nếu muốn, ở đây tôi dùng placeholder hoặc ảnh mặc định */}
-                            <Image
-                                src="/placeholder-image.jpg"
-                                alt="Auction Item"
-                                fill
-                                className="object-contain"
-                            />
+                            <Image src={auction.images[0]?.url || '/placeholder.jpg'} alt={auction.name} fill className="object-contain bg-gray-100" />
                         </div>
                     </div>
 

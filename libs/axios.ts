@@ -2,7 +2,7 @@
 import axios, { AxiosError } from 'axios';
 import Cookies from 'js-cookie';
 
-const apiBaseUrl = 'http://localhost:3000/api';
+const apiBaseUrl = 'https://auction-hub-kc24.onrender.com/api';
 
 const apiClient = axios.create({
   baseURL: `${apiBaseUrl}`
