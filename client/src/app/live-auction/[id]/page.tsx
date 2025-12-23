@@ -108,11 +108,6 @@ export default function LiveAuctionPage() {
 
         // 2. Kết nối Socket
         const newSocket = io('https://auction-hub-kc24.onrender.com/bidding', {
-            auth: { token: token },
-            transports: ['websocket', 'polling'],
-            reconnection: true,
-
-        const newSocket = io('https://auction-hub-kc24.onrender.com/bidding', {
             auth: {
                 token: token // <--- BẮT BUỘC THEO GUIDE
             },
