@@ -42,21 +42,17 @@ export const useAdminRegistration = () => {
 
       console.log("API Response:",  data); 
 
-    // Trường hợp 1: API trả về chuẩn { success: true, data: [], meta: {} }
     if (data && data.data) {
         setRegistrations(data.data);
 
-        // Kiểm tra xem backend trả về 'pagination' hay 'meta'
         const meta = data.meta; 
         if (meta) {
             setTotalPages(meta.totalPages);
             setTotalItems(meta.totalItems);
         }
     } 
-    // Trường hợp 2: Service đã lỡ return res.data.data (chỉ có mảng)
     else if (Array.isArray(data)) {
         setRegistrations(data);
-        // Không lấy được phân trang nếu service chỉ trả về mảng
     }
     } catch (error: any) {
       console.error('Lỗi tải danh sách đăng ký:', error);

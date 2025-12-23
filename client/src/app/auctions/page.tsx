@@ -12,7 +12,6 @@ import Link from "next/link";
 import { Home } from "lucide-react";
 import AuctionFilter from "../../components/AuctionFilter";
 import apiClient from "@auction-hub/axios";
-import { getImageUrl } from "../utils/format";
 import { Button } from "@auction-hub/shacdn-ui/button";
 
 const PAGE_SIZE = 12;
@@ -99,13 +98,16 @@ function AuctionsContent() {
 
   const fetchAuctions = async () => {
     try {
-      const params = {
+      const params: any = {
         page,
         limit: PAGE_SIZE,
         sortBy: "createdAt",
         sortOrder: "desc",
       };
 
+      if (statusParam) {
+        params.status = statusParam;
+      }
 
       const res = await apiClient.get("/auctions", { params });
 
@@ -133,8 +135,8 @@ function AuctionsContent() {
 
   const handleFilterChange = (newFilters: any) => {
     if (newFilters.type) {
+      setPage(1); // Reset page trước khi push router
       router.push(`/auctions?type=${newFilters.type}&page=1`);
-      setPage(1);
     }
 
     if (newFilters.priceRange) {
@@ -188,7 +190,7 @@ function AuctionsContent() {
           <>
             <SectionGrid items={filteredAuctions} />
 
-            {/* Pagination (UI giống #1, logic giữ nguyên) */}
+            {/* Pagination */}
             {totalPages > 1 && (
               <div className="flex justify-center items-center gap-2 mt-12 mb-8">
                 <Button

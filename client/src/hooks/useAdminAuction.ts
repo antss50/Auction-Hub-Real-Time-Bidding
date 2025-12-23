@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { AuctionService } from '../services/auction.service';
-import { AuctionDetail, AuctionItem } from '../types/auction';
+import { AuctionItem } from '../types/auction';
 import { useDebounce } from './useDebounce';
 
 export const useAdminAuctions = () => {
@@ -92,7 +92,7 @@ export const useAdminAuctions = () => {
     try {
       await AuctionService.create(data);
       setRefreshKey(prev => prev + 1);
-      return true; // Trả về true để component biết mà đóng modal
+      return true; 
     } catch (error) {
       alert('Lỗi tạo mới');
       return false;

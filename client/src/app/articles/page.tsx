@@ -3,7 +3,7 @@
 import { useEffect, useState, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { Search } from "lucide-react";
-import apiClient from "@auction-hub/axios"; // Import axios instance của bạn
+import apiClient from "@auction-hub/axios"; 
 import { Article } from "../../types/article";
 import Topbar from "../../components/Topbar";
 import Navbar from "../../components/Navbar";

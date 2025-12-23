@@ -32,7 +32,7 @@ export default function AuctionFilter({ onFilterChange, currentType }: AuctionFi
   const [location, setLocation] = useState("");
   const [category, setCategory] = useState("");
 
-  // 👉 QUAN TRỌNG: Đồng bộ state khi URL thay đổi (VD: User bấm Back/Forward trình duyệt)
+  // Đồng bộ state khi URL thay đổi 
   useEffect(() => {
     setSelectedType(currentType);
   }, [currentType]);

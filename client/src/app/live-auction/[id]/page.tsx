@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams, useRouter, notFound } from "next/navigation";
 import Image from "next/image";
 import { io, Socket } from 'socket.io-client';
@@ -8,7 +8,7 @@ import Topbar from "../../../components/Topbar";
 import Navbar from "../../../components/Navbar";
 import Footer from "../../../components/Footer";
 import { placeManualBid } from '../../../services/auctionsService';
-import { AdminActionService } from '../../../services/admin-action.service'; // Đảm bảo bạn đã tạo file này theo hướng dẫn trước
+import { AdminActionService } from '../../../services/admin-action.service'; 
 import { CountdownTimer } from '../../../components/CountdownTimer';
 import { toast } from "sonner";
 import Cookies from 'js-cookie';
@@ -18,7 +18,6 @@ import {
 } from '../../../services/auctionsService';
 import { AuctionDetail } from '../../../types/auction';
 
-// Cập nhật interface cho Bid
 interface BidHistoryItem {
     bidId: string;
     amount: number;
@@ -109,9 +108,9 @@ export default function LiveAuctionPage() {
         // 2. Kết nối Socket
         const newSocket = io('https://auction-hub-kc24.onrender.com/bidding', {
             auth: {
-                token: token // <--- BẮT BUỘC THEO GUIDE
+                token: token 
             },
-            transports: ['websocket', 'polling'], // Guide khuyên nên có cả polling để fallback
+            transports: ['websocket', 'polling'], 
             reconnection: true,             // Tự động kết nối lại
             reconnectionAttempts: 5,
         });
@@ -346,7 +345,6 @@ export default function LiveAuctionPage() {
 
                         {/* Product Image */}
                         <div className="relative w-full h-[500px] bg-gray-200 rounded-xl overflow-hidden shadow-inner">
-                            {/* Bạn có thể lấy ảnh từ API detail nếu muốn, ở đây tôi dùng placeholder hoặc ảnh mặc định */}
                             <Image src={auction.images[0]?.url || '/placeholder.jpg'} alt={auction.name} fill className="object-contain bg-gray-100" />
                         </div>
                     </div>
