@@ -179,7 +179,7 @@ export default function AdminAuctionDetailPage() {
             <CheckCircle2 className="text-green-600" />
             Khu vực xử lý kết thúc phiên
         </h3>
-        <AuctionFinalizationPanel auctionId={id} status={auction.status} />
+        <AuctionFinalizationPanel auctionId={id} propertyOwner={auction.propertyOwner} status={auction.status} />
       </div>
 
     </div>

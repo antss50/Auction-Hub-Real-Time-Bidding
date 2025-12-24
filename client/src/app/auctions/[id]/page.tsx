@@ -84,7 +84,7 @@ export default function AuctionDetailPage() {
     // --- 1. XỬ LÝ ĐĂNG KÝ (Nộp hồ sơ) ---
     const handleRegisterSubmit = async () => {
         if (!docFiles || docFiles.length === 0) {
-            alert("Vui lòng chọn ít nhất 1 tài liệu!");
+            toast.error("Vui lòng chọn ít nhất 1 tài liệu!");
             return;
         }
 
@@ -106,14 +106,14 @@ export default function AuctionDetailPage() {
             const res = await registerToBid(formData);
 
             if (res && res.success) {
-                alert("Nộp hồ sơ thành công! Vui lòng chờ duyệt.");
+                toast.success("Nộp hồ sơ thành công! Vui lòng chờ duyệt.");
                 // Lưu ý: res.data.id chính là participant-uuid
                 console.log("Participant ID:", res.data.id);
                 setShowRegisterModal(false);
                 loadData(); // Reload để cập nhật trạng thái nút bấm
             }
         } catch (error) {
-            alert("Đăng ký thất bại. Vui lòng thử lại.");
+            toast.error("Đăng ký thất bại. Vui lòng thử lại.");
         }
     };
 
@@ -123,7 +123,7 @@ export default function AuctionDetailPage() {
         const registrationId = registrationResponse?.data?.id;
 
         if (!registrationId || !auction) {
-            alert("Không tìm thấy thông tin đăng ký!");
+            toast.error("Không tìm thấy thông tin đăng ký!");
             return;
         }
 
@@ -140,7 +140,7 @@ export default function AuctionDetailPage() {
                 setShowDepositModal(true); // Mở modal hiển thị thông tin thanh toán
             }
         } catch (error) {
-            alert("Không thể tạo yêu cầu thanh toán.");
+            toast.error("Không thể tạo yêu cầu thanh toán.");
         }
     };
 
@@ -159,7 +159,7 @@ export default function AuctionDetailPage() {
             });
 
             if (res && (res.verified)) {
-                alert("Thanh toán thành công! Hồ sơ đã chuyển sang trạng thái chờ duyệt cuối cùng.");
+                toast.success("Thanh toán thành công! Hồ sơ đã chuyển sang trạng thái chờ duyệt cuối cùng.");
                 setShowDepositModal(false);
                 loadData(); // Reload để cập nhật trạng thái nút
             }
@@ -174,7 +174,7 @@ export default function AuctionDetailPage() {
             const res = await checkInAuction(id);
             if (res) {
                 // Hiển thị message thành công từ server
-                alert(res.message);
+                toast.success(res.message);
                 loadData(); // Reload lại để nút chuyển sang trạng thái "CHECKED_IN"
             }
         } catch (error: any) {

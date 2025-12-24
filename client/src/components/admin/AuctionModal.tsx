@@ -1,5 +1,7 @@
+'use client'
 import { Loader2, Save, Upload, X } from 'lucide-react';
 import { useState, useEffect } from 'react';
+import { useToast } from '@auction-hub/shacdn-ui/hooks/use-toast';
 import { UploadService } from '../../services/upload.service';
 import { LocationService } from '../../services/location.service';
 import { getImageUrl } from '../../app/utils/format';
@@ -49,6 +51,7 @@ export const AuctionFormModal = ({ isOpen, onClose, onSubmit, initialData }: Pro
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
+  const { toast } = useToast();
   
   useEffect(() => {
     if (isOpen) {
@@ -178,7 +181,7 @@ export const AuctionFormModal = ({ isOpen, onClose, onSubmit, initialData }: Pro
       }));
 
     } catch (error) {
-      alert("Lỗi tải ảnh lên!");
+      toast({ title: 'Lỗi tải ảnh', description: 'Lỗi tải ảnh lên! Vui lòng thử lại.', variant: 'destructive' });
     } finally {
       setIsUploading(false);
       

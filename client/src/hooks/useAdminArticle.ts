@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { NewsService } from '../services/article.service'; 
 import { Article } from '../types/article'; 
 import { useDebounce } from './useDebounce';
+import { useToast } from '@auction-hub/shacdn-ui/hooks/use-toast';
 
 export const useAdminNews = () => {
   const [newsList, setNewsList] = useState<Article[]>([]);
@@ -20,6 +21,7 @@ export const useAdminNews = () => {
   });
 
   const debouncedSearchTerm = useDebounce(filters.title, 500);
+  const { toast } = useToast();
   // --- STATE PHÂN TRANG ---
 
   // --- MODAL & EDITING ITEM ---
@@ -88,31 +90,37 @@ export const useAdminNews = () => {
     try {
       await NewsService.delete(id);
       setRefreshKey(prev => prev + 1);
+      toast({ title: 'Xóa bài viết', description: 'Bài viết đã được xóa.' });
       return true;
     } catch (error) {
       console.error("Lỗi xóa:", error);
+      toast({ title: 'Lỗi xóa', description: 'Không thể xóa bài viết. Vui lòng thử lại.', variant: 'destructive' });
       return false;
     }
-  };
+  }; 
 
   const createNews = async (data: Article) => {
     try {
       await NewsService.create(data);
       setRefreshKey(prev => prev + 1);
+      toast({ title: 'Tạo bài viết', description: 'Bài viết đã được tạo.' });
       return true;
     } catch (error) {
       console.error("Lỗi tạo mới:", error);
+      toast({ title: 'Lỗi tạo mới', description: 'Không thể tạo bài viết. Vui lòng thử lại.', variant: 'destructive' });
       return false;
     }
-  };
+  }; 
 
   const updateNews = async (id: string, data: Article) => {
     try {
       await NewsService.update(id, data);
       setRefreshKey(prev => prev + 1);
+      toast({ title: 'Cập nhật bài viết', description: 'Bài viết đã được cập nhật.' });
       return true;
     } catch (error) {
       console.error("Lỗi cập nhật:", error);
+      toast({ title: 'Lỗi cập nhật', description: 'Không thể cập nhật bài viết. Vui lòng thử lại.', variant: 'destructive' });
       return false;
     }
   };

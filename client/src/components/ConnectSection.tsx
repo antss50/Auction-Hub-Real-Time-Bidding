@@ -1,11 +1,14 @@
 "use client";
 import { Facebook, Youtube, Linkedin, Twitter } from "lucide-react";
 import Image from "next/image";
+import { useToast } from '@auction-hub/shacdn-ui/hooks/use-toast';
 
 export default function ConnectSection() {
+    const { toast } = useToast();
+
     const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
-        alert("Cảm ơn bạn đã đăng ký nhận thông tin!");
+        toast({ title: 'Cảm ơn', description: 'Cảm ơn bạn đã đăng ký nhận thông tin!' });
         e.currentTarget.reset();
     };
 

@@ -32,8 +32,16 @@ export const AdminActionService = {
   },
 
   // Get contract 
-  getContract: async (auctionId: string) => {
-    const res = await apiClient.get(`/contracts/${auctionId}`);
+  getContract: async (contractId: string) => {
+    const res = await apiClient.get(`/contracts/${contractId}?t=${new Date().getTime()}`);
+    return res.data;
+  },
+
+  // Download contract
+  downloadContract : async (contractId: string) => {
+    const res =await apiClient.get(`/contracts/${contractId}/pdf/vi`, {
+      responseType: 'blob'
+    })
     return res.data;
   }
 };

@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import Topbar from "../../components/Topbar";
 import Navbar from "../../components/Navbar";
 import Footer from "../../components/Footer";
+import { useToast } from '@auction-hub/shacdn-ui/hooks/use-toast';
 import {
     MapPin,
     Phone,
@@ -44,6 +45,7 @@ interface ContactData {
 }
 
 export default function ContactPage() {
+    const { toast } = useToast();
     const [contact, setContact] = useState<ContactData | null>(null);
 
     useEffect(() => {
@@ -62,7 +64,7 @@ export default function ContactPage() {
 
     const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
-        alert("Cảm ơn bạn! Thông tin đã được gửi thành công.");
+        toast({ title: 'Cảm ơn', description: 'Thông tin đã được gửi thành công.' });
         e.currentTarget.reset();
     };
 

@@ -1,7 +1,9 @@
+'use client'
 import React, { useState, useEffect } from 'react';
 import { X, Upload, Save, Loader2, Trash2 } from 'lucide-react';
 import { UploadService } from '../../services/upload.service'; 
 import RichTextEditor from '../admin/editor/RichTextEditor';
+import { useToast } from '@auction-hub/shacdn-ui/hooks/use-toast';
 
 interface Props {
   isOpen: boolean;
@@ -15,6 +17,8 @@ interface Props {
 export const NewsFormModal = ({ isOpen, onClose, onSubmit, initialData }: Props) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
+
+  const { toast } = useToast();
 
   // State Form chuẩn
   const [formData, setFormData] = useState({
@@ -73,7 +77,7 @@ export const NewsFormModal = ({ isOpen, onClose, onSubmit, initialData }: Props)
       }));
     } catch (error) {
       console.error("Upload failed:", error);
-      alert("Lỗi tải ảnh lên!");
+      toast({ title: 'Lỗi tải ảnh', description: 'Lỗi tải ảnh lên! Vui lòng thử lại.', variant: 'destructive' });
     } finally {
       setIsUploading(false);
       e.target.value = ''; 
@@ -91,7 +95,7 @@ export const NewsFormModal = ({ isOpen, onClose, onSubmit, initialData }: Props)
   const handleSubmit = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
     
-    if (!formData.title.trim()) return alert("Vui lòng nhập tiêu đề bài viết!");
+    if (!formData.title.trim()) return toast({ title: 'Thiếu tiêu đề', description: 'Vui lòng nhập tiêu đề bài viết!', variant: 'destructive' });
     
     setIsSubmitting(true);
 

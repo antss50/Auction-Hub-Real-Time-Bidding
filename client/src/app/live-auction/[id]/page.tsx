@@ -250,7 +250,7 @@ export default function LiveAuctionPage() {
     const handlePlaceBid = async () => {
         if (!auctionState) return;
         if (bidAmount < auctionState.nextMinimumBid) {
-            alert(`Giá đấu phải lớn hơn hoặc bằng ${formatCurrency(auctionState.nextMinimumBid)}`);
+            toast.error(`Giá đấu phải lớn hơn hoặc bằng ${formatCurrency(auctionState.nextMinimumBid)}`);
             return;
         }
 
