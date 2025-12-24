@@ -1,4 +1,5 @@
 'use client';
+
 import { createContext, useState, useContext, useEffect } from 'react';
 import Cookies from 'js-cookie';
 import { User } from '../types/auth.types';
@@ -6,7 +7,8 @@ import { User } from '../types/auth.types';
 type AuthContextType = {
     user: User | null;
     isAuthenticated: boolean;
-    login: (userData: User, token: string) => void;
+    loading: boolean;
+    login: (token: string, userData: User) => void;
     logout: () => void;
 };
 
@@ -17,37 +19,69 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     const [isAuthenticated, setIsAuthenticated] = useState(false);
     const [loading, setLoading] = useState(true);
 
+    // Load user khi refresh
     useEffect(() => {
         const token = Cookies.get('access_token');
 
-        if (token) {
-            setIsAuthenticated(true);
+        if (!token) {
+            setLoading(false);
+            return;
         }
-        setLoading(false);
+
+        const fetchMe = async () => {
+            try {
+                const res = await fetch('/api/auth/me', {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                });
+
+                if (!res.ok) throw new Error('Unauthorized');
+
+                const json = await res.json();
+
+                // LẤY user từ json.data
+                setUser(json.data);
+                setIsAuthenticated(true);
+            } catch (error) {
+                Cookies.remove('access_token');
+                setUser(null);
+                setIsAuthenticated(false);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchMe();
     }, []);
 
-    const login = (userData: User, token: string) => {
+    const login = (token: string, userData: User) => {
+        Cookies.set('access_token', token);
         setUser(userData);
         setIsAuthenticated(true);
-        Cookies.set('access_token', token);
+        setLoading(false);
     };
 
     const logout = () => {
+        Cookies.remove('access_token');
         setUser(null);
         setIsAuthenticated(false);
-        Cookies.remove('access_token');
-    }
-
-    if (loading) {
-        return <div>Loading...</div>;
-    }
+    };
 
     return (
-        <AuthContext.Provider value={{ user, isAuthenticated, login, logout }}>
+        <AuthContext.Provider
+            value={{
+                user,
+                isAuthenticated,
+                loading,
+                login,
+                logout,
+            }}
+        >
             {children}
         </AuthContext.Provider>
     );
-}
+};
 
 export const useAuth = () => {
     const context = useContext(AuthContext);
@@ -55,5 +89,4 @@ export const useAuth = () => {
         throw new Error('useAuth must be used within an AuthProvider');
     }
     return context;
-}
-
+};

@@ -14,61 +14,151 @@ import {
     registerToBid,
     submitDeposit,
     verifyDepositPayment,
-    checkInAuction
+    checkInAuction,
+    // Import các hàm mới
+    getAuctionResult,
+    getWinnerPaymentRequirements,
+    submitWinnerPayment,
+    verifyWinnerPayment,
+    exportContractPdfVi
 } from '../../../services/auctionsService';
 import { AuctionDetail } from '../../../types/auction';
 import { toast } from "sonner";
+import { useAuth } from "../../../contexts/AuthContext";
+
+import React from 'react';
 
 function BackgroundIcon() {
     return (
-        <div className="absolute right-3 top-1/2 transform -translate-y-1/2 text-6xl text-rose-200 opacity-50 font-bold rounded-full w-16 h-16 flex items-center justify-center border-2 border-rose-200"
-            style={{ color: 'rgba(230, 180, 180, 0.4)', borderColor: 'rgba(230, 180, 180, 0.4)', transform: 'translateY(-50%) rotate(-15deg)' }}>
-            <span className="text-4xl">1</span>
+        <div className="absolute bottom-2 right-2 opacity-10">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 2L2 7v10c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V7l-10-5z" />
+            </svg>
         </div>
     );
 }
 
-function InfoCard({ label, text }: { label: string; text?: string; }) {
+function InfoCard({
+    label,
+    text,
+    whiteBg = false,
+}: {
+    label: string;
+    text?: string;
+    whiteBg?: boolean;
+}) {
     return (
-        <div className="relative p-4 rounded-xl shadow-md" style={{ backgroundColor: '#fef7f7' }}>
-            <p className="text-lg mb-1" style={{ color: '#6e4747', fontWeight: 500 }}>{label}</p>
-            <p className="text-lg font-bold" style={{ color: '#9e2b2b' }}>{text}</p>
-            <BackgroundIcon />
+        <div
+            className="relative p-4 rounded-2xl shadow-sm hover:shadow-md transition-all duration-300 border border-slate-200/50"
+            style={{
+                background: whiteBg
+                    ? 'linear-gradient(135deg, #ffffff 0%, #f8fafc 100%)'
+                    : 'linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%)'
+            }}
+        >
+            <p
+                className="text-sm font-medium mb-2 uppercase tracking-wide"
+                style={{ color: whiteBg ? '#64748b' : '#475569' }}
+            >
+                {label}
+            </p>
+            <p
+                className="text-xl font-semibold"
+                style={{ color: whiteBg ? '#334155' : '#1e293b' }}
+            >
+                {text}
+            </p>
+            <div style={{ color: whiteBg ? '#cbd5e1' : '#94a3b8' }}>
+                <BackgroundIcon />
+            </div>
         </div>
     );
 }
+
 
 export default function AuctionDetailPage() {
+    const { user } = useAuth();
     const params = useParams();
     const router = useRouter();
     const id = params.id as string;
+
+    // [THÊM MỚI] State xác định có phải winner không
+    const [isWinner, setIsWinner] = useState(false);
 
     const [auction, setAuction] = useState<AuctionDetail | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [isRegistrationEnded, setIsRegistrationEnded] = useState(false);
     const [registrationResponse, setRegistrationResponse] = useState<any>(null);
 
+    // State cho kết quả đấu giá (API 23)
+    const [auctionResult, setAuctionResult] = useState<any>(null);
+
     // --- STATE CHO MODALS ---
     const [showRegisterModal, setShowRegisterModal] = useState(false);
     const [showDepositModal, setShowDepositModal] = useState(false);
+
+    // State cho Winner Flow
+    const [showWinnerReqModal, setShowWinnerReqModal] = useState(false); // Modal API 18
+    const [showWinnerPayModal, setShowWinnerPayModal] = useState(false); // Modal API 19
+    const [winnerReqData, setWinnerReqData] = useState<any>(null); // Data API 18
+    const [winnerPayData, setWinnerPayData] = useState<any>(null); // Data API 19
 
     // State dữ liệu form đăng ký
     const [docFiles, setDocFiles] = useState<FileList | null>(null);
     const [mediaFiles, setMediaFiles] = useState<FileList | null>(null);
 
-    // State dữ liệu thanh toán
+    // State dữ liệu thanh toán cọc
     const [depositData, setDepositData] = useState<any>(null);
 
     // Hàm load dữ liệu
     const loadData = async () => {
         if (!id) return;
         try {
+            // 1. Load chi tiết đấu giá
             const auctionData = await getAuctionById(id);
             setAuction(auctionData);
+
             if (auctionData) {
                 setIsRegistrationEnded(new Date(auctionData.saleEndAt).getTime() < Date.now());
-                const regData = await getAuctionRegistration(id);
-                setRegistrationResponse(regData);
+
+                // 2. Load đăng ký của user (nếu đã login)
+                if (user) {
+                    const regData = await getAuctionRegistration(id);
+                    setRegistrationResponse(regData);
+                }
+
+                // 3. Logic khi phiên đấu giá kết thúc
+                const now = Date.now();
+                const isEnded = now > new Date(auctionData.auctionEndAt).getTime() ||
+                    auctionData.status === 'success' ||
+                    auctionData.status === 'awaiting_result';
+
+                if (isEnded) {
+                    // Gọi API 23 để lấy thông tin chung (Status hợp đồng...)
+                    const resultRes = await getAuctionResult(id);
+                    if (resultRes?.success) {
+                        setAuctionResult(resultRes.data);
+                    }
+
+                    // [LOGIC MỚI] Gọi API 18 để lấy thông tin thanh toán & check Winner
+                    try {
+                        const paymentReq = await getWinnerPaymentRequirements(id);
+                        if (paymentReq?.success) {
+                            setWinnerReqData(paymentReq.data); // Lưu data API 18
+
+                            // SO SÁNH ID ĐỂ XÁC ĐỊNH WINNER
+                            if (user && paymentReq.data?.winner?.userId === user.id) {
+                                setIsWinner(true);
+                            } else {
+                                setIsWinner(false);
+                            }
+                        }
+                    } catch (err) {
+                        // Lỗi này có thể do chưa có winner hoặc lỗi mạng, bỏ qua
+                        console.log("Không lấy được thông tin thanh toán winner hoặc không phải winner");
+                        setIsWinner(false);
+                    }
+                }
             }
         } catch (error) {
             console.error(error);
@@ -79,7 +169,7 @@ export default function AuctionDetailPage() {
 
     useEffect(() => {
         loadData();
-    }, [id]);
+    }, [id, user]); // Thêm user vào deps để reload khi login
 
     // --- 1. XỬ LÝ ĐĂNG KÝ (Nộp hồ sơ) ---
     const handleRegisterSubmit = async () => {
@@ -132,7 +222,7 @@ export default function AuctionDetailPage() {
             const res = await submitDeposit({
                 registrationId: registrationId,
                 auctionId: id,
-                amount: Number(auction.depositAmountRequired) + Number(auction.saleFee) // Lấy amount từ auction
+                amount: Number(auction.depositAmountRequired) + Number(auction.saleFee)
             });
 
             if (res) {
@@ -168,13 +258,13 @@ export default function AuctionDetailPage() {
         }
     };
 
-    // Thêm hàm xử lý Check-in (đặt gần các hàm handle khác)
+    // --- 4. XỬ LÝ ĐIỂM DANH ---
     const handleCheckIn = async () => {
         try {
             const res = await checkInAuction(id);
             if (res) {
                 // Hiển thị message thành công từ server
-                alert(res.message);
+                alert("Điểm danh thành công! Vui lòng chờ đến khi phiên đấu giá bắt đầu.");
                 loadData(); // Reload lại để nút chuyển sang trạng thái "CHECKED_IN"
             }
         } catch (error: any) {
@@ -183,14 +273,131 @@ export default function AuctionDetailPage() {
         }
     };
 
-    // --- RENDER NÚT BẤM ---
+    // --- CÁC HÀM XỬ LÝ WINNER ---
+
+    // 1. Gọi API 18: Xem chi tiết thanh toán winner
+    const handleShowWinnerPaymentReq = async () => {
+        try {
+            const res = await getWinnerPaymentRequirements(id);
+            if (res?.success) {
+                setWinnerReqData(res.data);
+                setShowWinnerReqModal(true);
+            }
+        } catch (error: any) {
+            toast.error(error.message || "Không thể lấy thông tin thanh toán");
+        }
+    };
+
+    // 2. Gọi API 19: Khởi tạo thanh toán winner
+    const handleInitWinnerPayment = async () => {
+        try {
+            const res = await submitWinnerPayment(id);
+            if (res) {
+                setWinnerPayData(res);
+                setShowWinnerReqModal(false); // Đóng modal chi tiết
+                setShowWinnerPayModal(true);  // Mở modal thanh toán (QR/Stripe)
+            }
+        } catch (error: any) {
+            toast.error(error.message || "Không thể khởi tạo thanh toán");
+        }
+    };
+
+    // 3. Gọi API 20: Xác nhận thanh toán winner
+    const handleVerifyWinnerPayment = async () => {
+        const sessionId = winnerPayData?.paymentId || winnerPayData?.sessionId;
+        if (!sessionId) return;
+
+        try {
+            const res = await verifyWinnerPayment({ sessionId, auctionId: id });
+            if (res && res.success) {
+                alert("Thanh toán thành công! Bạn đã hoàn tất thủ tục.");
+                setShowWinnerPayModal(false);
+                loadData(); // Reload để cập nhật trạng thái hợp đồng thành signed
+            }
+        } catch (error: any) {
+            toast.error(error.message || "Xác thực thanh toán thất bại");
+        }
+    };
+
+    // 4. Gọi API 28: Tải hợp đồng
+    const handleDownloadContract = async () => {
+        const contractId = auctionResult?.contract?.contractId;
+        if (!contractId) {
+            toast.error("Chưa có hợp đồng");
+            return;
+        }
+        try {
+            const blob = await exportContractPdfVi(contractId);
+            const url = window.URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.setAttribute('download', `Hop_dong_${auction?.code || 'auciton'}.pdf`);
+            document.body.appendChild(link);
+            link.click();
+            link.parentNode?.removeChild(link);
+        } catch (error) {
+            toast.error("Lỗi khi tải hợp đồng");
+        }
+    };
+
+
+    // --- RENDER ACTION BUTTON ---
     const renderActionButton = () => {
         if (!auction) return null;
+
+        // 1. LOGIC WINNER (Dùng biến isWinner đã tính toán từ API 18)
+        if (isWinner && auctionResult) {
+            const contractStatus = auctionResult.contract?.status;
+
+            // Nếu đã ký (signed) hoặc hoàn tất (completed) -> Hiện nút tải hợp đồng
+            if (contractStatus === 'signed' || contractStatus === 'completed') {
+                return (
+                    <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mb-5 text-center">
+                        <strong className="font-bold text-xl block mb-1">CHÚC MỪNG!</strong>
+                        <span className="block sm:inline text-lg">Bạn đã sở hữu tài sản này.</span>
+                        <div className="mt-3 flex gap-2 justify-center">
+                            <button
+                                onClick={handleDownloadContract}
+                                className="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded shadow transition"
+                            >
+                                Tải Hợp Đồng
+                            </button>
+                        </div>
+                    </div>
+                );
+            }
+
+            // Nếu mới thắng (draft) hoặc chưa có status -> Hiện nút thanh toán
+            if (contractStatus === 'draft' || !contractStatus) {
+                return (
+                    <div className="bg-blue-50 border border-blue-200 p-4 rounded-lg mb-5 shadow-sm">
+                        <p className="text-blue-800 font-bold text-lg mb-2 text-center">🏆 Bạn là người thắng cuộc!</p>
+                        <div className="flex flex-col gap-3">
+                            <button
+                                onClick={() => setShowWinnerReqModal(true)}
+                                className="w-full py-3 rounded-lg bg-blue-600 text-white font-bold hover:bg-blue-700 transition shadow-lg animate-pulse"
+                            >
+                                💰 Chi tiết thanh toán & Hoàn tất
+                            </button>
+
+                            {/* Nút xem hợp đồng nháp (nếu muốn) */}
+                            <button
+                                onClick={handleDownloadContract}
+                                className="w-full py-2 rounded-lg border border-gray-400 text-gray-700 font-semibold hover:bg-gray-100 transition"
+                            >
+                                👁️ Xem hợp đồng nháp
+                            </button>
+                        </div>
+                    </div>
+                );
+            }
+        }
+
+        // --- LOGIC BÌNH THƯỜNG ---
         const now = new Date();
         const isSuccess = registrationResponse?.success;
         const currentState = registrationResponse?.data?.currentState;
 
-        // 1. Chưa đăng ký / Bị từ chối
         if (!isSuccess || currentState === "DOCUMENTS_REJECTED" || currentState === "WITHDRAWN") {
             if (isRegistrationEnded) return <button disabled className="w-full py-2 bg-gray-200 text-gray-600 font-semibold rounded-lg mb-5">Hết thời gian nộp hồ sơ</button>;
 
@@ -204,12 +411,10 @@ export default function AuctionDetailPage() {
             );
         }
 
-        // 2. Chờ duyệt
         if (currentState === "PENDING_DOCUMENT_REVIEW") {
             return <button disabled className="w-full py-3 rounded-lg bg-yellow-100 text-yellow-700 font-bold border border-yellow-300 mb-3 cursor-wait">⏳ Chờ phê duyệt</button>;
         }
 
-        // 3. Đã duyệt hồ sơ -> Nộp cọc
         if (currentState === "DOCUMENTS_VERIFIED") {
             return (
                 <button
@@ -221,12 +426,10 @@ export default function AuctionDetailPage() {
             );
         }
 
-        // 4. Đã nộp cọc -> Chờ duyệt cấp 2
         if (currentState === "DEPOSIT_PAID") {
             return <button disabled className="w-full py-3 rounded-lg bg-yellow-100 text-yellow-700 font-bold border border-yellow-300 mb-3">⏳ Chờ phê duyệt</button>;
         }
 
-        // 5. Confirmed -> Điểm danh
         if (currentState === "CONFIRMED") {
             return <button onClick={handleCheckIn} className="w-full py-3 rounded-lg bg-indigo-600 text-white font-bold hover:bg-indigo-700 transition mb-3 text-lg">📍 Điểm danh</button>;
         }
@@ -239,7 +442,6 @@ export default function AuctionDetailPage() {
             );
         };
 
-        // 6 & 7. Checked In
         if (currentState === "CHECKED_IN") {
             if (now >= new Date(auction.auctionStartAt) && now <= new Date(auction.auctionEndAt)) {
                 return <button onClick={() => router.push(`/live-auction/${id}`)} className="w-full py-4 rounded-lg bg-red-600 text-white font-bold text-xl hover:bg-red-700 transition mb-3 animate-bounce">🔨 VÀO PHÒNG ĐẤU GIÁ</button>;
@@ -270,23 +472,35 @@ export default function AuctionDetailPage() {
                             <InfoCard label="Bước giá" text={`${parseInt(auction.bidIncrement).toLocaleString('vi-VN')} đ`} />
                             <InfoCard label="Tiền đặt trước" text={`${parseInt(auction.depositAmountRequired).toLocaleString('vi-VN')} đ`} />
                             <InfoCard label="Phí tham gia" text={`${parseInt(auction.saleFee).toLocaleString('vi-VN')} đ`} />
-                            <InfoCard label="Thời gian bắt đầu tiếp nhận hồ sơ" text={new Date(auction.saleStartAt).toLocaleString('vi-VN')} />
-                            <InfoCard label="Thời gian kết thúc tiếp nhận hồ sơ" text={new Date(auction.saleEndAt).toLocaleString('vi-VN')} />
-                            <InfoCard label="Thời gian bắt đầu đấu giá" text={new Date(auction.auctionStartAt).toLocaleString('vi-VN')} />
-                            <InfoCard label="Thời gian kết thúc đấu giá" text={new Date(auction.auctionEndAt).toLocaleString('vi-VN')} />
-                            <InfoCard label="Địa điểm" text={auction.assetAddress} />
-                            <InfoCard label="Loại tài sản" text={auction.assetType} />
+
+                            <InfoCard
+                                label="Thời gian bắt đầu tiếp nhận hồ sơ"
+                                text={new Date(auction.saleStartAt).toLocaleString('vi-VN')}
+                                whiteBg
+                            />
+                            <InfoCard
+                                label="Thời gian kết thúc tiếp nhận hồ sơ"
+                                text={new Date(auction.saleEndAt).toLocaleString('vi-VN')}
+                                whiteBg
+                            />
+                            <InfoCard
+                                label="Thời gian bắt đầu đấu giá"
+                                text={new Date(auction.auctionStartAt).toLocaleString('vi-VN')}
+                                whiteBg
+                            />
+                            <InfoCard
+                                label="Thời gian kết thúc đấu giá"
+                                text={new Date(auction.auctionEndAt).toLocaleString('vi-VN')}
+                                whiteBg
+                            />
+                            <InfoCard label="Địa điểm" text={auction.assetAddress} whiteBg />
+                            <InfoCard label="Loại tài sản" text={auction.assetType} whiteBg />
                         </div>
                     </div>
 
                     <aside className="bg-white border border-gray-200 rounded-lg p-5 h-fit sticky top-5">
                         <h3 className="font-semibold text-xl mb-5 text-center text-gray-800">Thời gian bắt đầu đấu giá</h3>
                         <TimeBox startTime={auction.auctionStartAt} />
-
-                        <p className="text-left mt-10 text-sm text-gray-600 mb-2">
-                            Thời gian nộp tiền đặt trước: <br />
-                            <span className="font-medium">{new Date(auction.depositEndAt).toLocaleString('vi-VN')}</span>
-                        </p>
 
                         <div className="mt-5">
                             {renderActionButton()}
@@ -383,8 +597,15 @@ export default function AuctionDetailPage() {
                             </div>
                             {/* Link Stripe nếu có */}
                             {depositData.paymentUrl && (
-                                <div className="text-center mt-2">
-                                    <a href={depositData.paymentUrl} target="_blank" rel="noreferrer" className="text-blue-600 underline">Hoặc thanh toán qua cổng Stripe tại đây</a>
+                                <div className="text-center mt-6 pt-4 border-t border-gray-200">
+                                    <a
+                                        href={depositData.paymentUrl}
+                                        target="_blank"
+                                        rel="noreferrer"
+                                        className="inline-flex items-center gap-2 text-white bg-indigo-600 hover:bg-indigo-700 px-4 py-2 rounded-lg font-medium transition"
+                                    >
+                                        💳 Thanh toán qua thẻ (Stripe)
+                                    </a>
                                 </div>
                             )}
                         </div>
@@ -393,7 +614,114 @@ export default function AuctionDetailPage() {
                             <button onClick={() => setShowDepositModal(false)} className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg">Đóng</button>
                             <button
                                 onClick={handleVerifyPayment}
-                                className="px-6 py-2 bg-green-600 text-white font-bold rounded-lg hover:bg-green-700 shadow-lg shadow-green-200"
+                                className="px-6 py-2 bg-blue-600 text-white font-bold hover:bg-blue-700 rounded-lg shadow-lg shadow-green-200"
+                            >
+                                Xác nhận thanh toán
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* MODAL 3 [MỚI]: CHI TIẾT THANH TOÁN WINNER (API 18) */}
+            {showWinnerReqModal && winnerReqData && (
+                <div className="fixed inset-0 bg-black bg-opacity-60 z-50 flex items-center justify-center p-4">
+                    <div className="bg-white rounded-2xl p-6 w-[500px] shadow-2xl border-t-8 border-blue-600 animate-in fade-in zoom-in duration-200">
+                        <h3 className="text-2xl font-bold mb-6 text-gray-800 border-b pb-3">Chi tiết thanh toán tài sản</h3>
+
+                        <div className="space-y-4 text-gray-700">
+                            <div className="flex justify-between items-center py-2 border-b border-dashed">
+                                <span className="text-gray-600">Giá trúng đấu giá:</span>
+                                <span className="font-bold text-lg">{winnerReqData.paymentBreakdown?.winningAmount?.toLocaleString()} đ</span>
+                            </div>
+                            <div className="flex justify-between items-center py-2 border-b border-dashed">
+                                <span className="text-gray-600">Tiền đặt trước (Đã trừ):</span>
+                                <span className="font-semibold text-green-600">- {winnerReqData.paymentBreakdown?.depositAlreadyPaid?.toLocaleString()} đ</span>
+                            </div>
+                            <div className="flex justify-between items-center py-2 border-b border-dashed">
+                                <span className="text-gray-600">Phí hồ sơ:</span>
+                                <span className="font-semibold text-orange-600">+ {winnerReqData.paymentBreakdown?.dossierFee?.toLocaleString()} đ</span>
+                            </div>
+                            <div className="flex justify-between items-center py-4 bg-orange-50 px-3 rounded-lg mt-2">
+                                <span className="font-bold text-lg text-gray-800">Tổng tiền phải nộp:</span>
+                                <span className="font-bold text-2xl text-red-600">{winnerReqData.paymentBreakdown?.totalDue?.toLocaleString()} đ</span>
+                            </div>
+                        </div>
+
+                        <div className="mt-4 text-sm text-red-500 italic text-center bg-red-50 p-2 rounded">
+                            ⚠️ Hạn chót thanh toán: {new Date(winnerReqData.paymentBreakdown.paymentDeadline).toLocaleString('vi-VN')}
+                        </div>
+
+                        <div className="flex justify-end gap-3 mt-8">
+                            <button onClick={() => setShowWinnerReqModal(false)} className="px-5 py-2 text-gray-600 hover:bg-gray-100 rounded-lg font-medium">Đóng</button>
+                            <button
+                                onClick={handleInitWinnerPayment}
+                                className="px-6 py-2 bg-blue-600 text-white font-bold hover:bg-blue-700 rounded-lg shadow-lg"
+                            >
+                                Thanh toán ngay
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* MODAL 4 [MỚI]: THANH TOÁN WINNER - QR/STRIPE (API 19) */}
+            {showWinnerPayModal && winnerPayData && (
+                <div className="fixed inset-0 bg-black bg-opacity-60 z-50 flex items-center justify-center p-4">
+                    <div className="bg-white rounded-xl p-6 w-[600px] max-w-full shadow-2xl max-h-[90vh] overflow-y-auto">
+                        <h3 className="text-xl font-bold mb-4 text-blue-800 border-b pb-2 flex items-center gap-2">
+                            <span>🔐</span> Cổng thanh toán
+                        </h3>
+
+                        {/* QR Code */}
+                        {winnerPayData.qrCode && (
+                            <div className="flex justify-center mb-6 bg-white p-4 rounded-xl border shadow-sm">
+                                <img src={winnerPayData.qrCode} alt="QR Payment" className="w-56 h-56 object-contain" />
+                            </div>
+                        )}
+
+                        <div className="space-y-3 text-sm mb-6 bg-gray-50 p-5 rounded-lg border border-gray-200">
+                            <div className="grid grid-cols-3 gap-2">
+                                <span className="text-gray-500">Ngân hàng:</span>
+                                <span className="font-bold col-span-2">{winnerPayData.bankInfo?.bank_name}</span>
+
+                                <span className="text-gray-500">Số tài khoản:</span>
+                                <span className="font-bold text-lg text-blue-600 col-span-2 tracking-wider">{winnerPayData.bankInfo?.account_number}</span>
+
+                                <span className="text-gray-500">Chủ tài khoản:</span>
+                                <span className="font-bold col-span-2">{winnerPayData.bankInfo?.account_name}</span>
+
+                                <span className="text-gray-500">Số tiền:</span>
+                                <span className="font-bold text-red-600 text-lg col-span-2">{winnerPayData.amount?.toLocaleString()} đ</span>
+
+                                <span className="text-gray-500 mt-1">Nội dung:</span>
+                                <div className="col-span-2">
+                                    <span className="font-mono font-bold bg-yellow-200 px-3 py-1 rounded text-black select-all border border-yellow-300">
+                                        {winnerPayData.bankInfo?.transfer_content}
+                                    </span>
+                                </div>
+                            </div>
+
+                            {/* Link Stripe */}
+                            {winnerPayData.paymentUrl && (
+                                <div className="text-center mt-6 pt-4 border-t border-gray-200">
+                                    <a
+                                        href={winnerPayData.paymentUrl}
+                                        target="_blank"
+                                        rel="noreferrer"
+                                        className="inline-flex items-center gap-2 text-white bg-indigo-600 hover:bg-indigo-700 px-4 py-2 rounded-lg font-medium transition"
+                                    >
+                                        💳 Thanh toán qua thẻ (Stripe)
+                                    </a>
+                                </div>
+                            )}
+                        </div>
+
+                        <div className="flex justify-end gap-3 pt-2">
+                            <button onClick={() => setShowWinnerPayModal(false)} className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg">Quay lại</button>
+                            <button
+                                onClick={handleVerifyWinnerPayment}
+                                className="px-6 py-2 bg-blue-600 text-white font-bold hover:bg-blue-700 rounded-lg shadow-lg shadow-green-200"
                             >
                                 Xác nhận thanh toán
                             </button>

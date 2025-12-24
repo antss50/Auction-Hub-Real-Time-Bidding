@@ -74,3 +74,60 @@ export const placeManualBid = async (data: { auctionId: string; amount: number }
         throw new Error(message);
     }
 };
+
+// [API 23] Lấy kết quả đấu giá
+export const getAuctionResult = async (auctionId: string) => {
+    try {
+        const response = await apiClient.get(`/auction-finalization/results/${auctionId}`);
+        return response.data;
+    } catch (error) {
+        return null;
+    }
+};
+
+// [API 18] Lấy thông tin yêu cầu thanh toán cho winner
+export const getWinnerPaymentRequirements = async (auctionId: string) => {
+    try {
+        const response = await apiClient.get(`/auction-finalization/winner-payment-requirements/${auctionId}`);
+        return response.data;
+    } catch (error) {
+        throw error;
+    }
+};
+
+// [API 19] Khởi tạo thanh toán cho winner (Winner Payment)
+export const submitWinnerPayment = async (auctionId: string) => {
+    try {
+        const response = await apiClient.post('/auction-finalization/submit-winner-payment', { auctionId });
+        return response.data.data; // Trả về paymentUrl, qrCode, bankInfo...
+    } catch (error) {
+        throw error;
+    }
+};
+
+// [API 20] Xác nhận thanh toán winner
+export const verifyWinnerPayment = async (data: { sessionId: string; auctionId: string }) => {
+    try {
+        const response = await apiClient.post('/auction-finalization/verify-winner-payment', data);
+        return response.data;
+    } catch (error: any) {
+        const message =
+            error.response?.data?.error?.message ||
+            "Lỗi xác nhận thanh toán không xác định";
+        throw new Error(message);
+    }
+};
+
+// [API 28] Export PDF Hợp đồng (Tiếng Việt)
+// Lưu ý: Hàm này trả về blob để tải file
+export const exportContractPdfVi = async (contractId: string) => {
+    try {
+        const response = await apiClient.get(`/contracts/${contractId}/pdf/vi`, {
+            responseType: 'blob' // Quan trọng để tải file
+        });
+        return response.data;
+    } catch (error) {
+        console.error("Error downloading contract:", error);
+        throw error;
+    }
+};

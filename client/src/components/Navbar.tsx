@@ -15,30 +15,9 @@ import {
   DropdownMenuTrigger,
 } from "@auction-hub/shacdn-ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@auction-hub/shacdn-ui/avatar";
-import { useEffect, useState } from 'react';
-import { createClient } from 'libs/supabase/Client';
 
 export default function Navbar() {
-
-  const [user, setUser] = useState<any>(null);
-
-  useEffect(() => {
-    const getUser = async () => {
-      const supabase = await createClient();
-      const { data, error } = await supabase.auth.getClaims();
-
-      if (error) {
-        console.error(error);
-        return;
-      }
-
-      setUser(data?.claims ?? null);
-    };
-
-    getUser();
-  }, []);
-
-  const { isAuthenticated, logout } = useAuth();
+  const { isAuthenticated, logout, user } = useAuth();
   const router = useRouter();
 
   const handleLogout = () => {
@@ -71,15 +50,15 @@ export default function Navbar() {
           <DropdownMenu>
             {<DropdownMenuTrigger asChild>
               <Avatar className="cursor-pointer">
-                <AvatarImage src={user?.avatar_url || ""} alt={user?.full_name || "User"} />
+                <AvatarImage src={user?.avatarUrl || ""} alt={user?.fullName || "User"} />
                 <AvatarFallback>
-                  {user?.user_metadata.full_name?.charAt(0).toUpperCase() || "U"}
+                  {user?.fullName.charAt(0).toUpperCase() || "U"}
                 </AvatarFallback>
               </Avatar>
             </DropdownMenuTrigger>}
             <DropdownMenuContent align="end" className="w-56">
               <DropdownMenuLabel>
-                Chào, {user?.user_metadata.full_name || "Người dùng"}
+                Chào, {user?.fullName || "Người dùng"}
                 <p className="text-xs font-normal text-gray-500">{user?.email}</p>
               </DropdownMenuLabel>
               <DropdownMenuSeparator />

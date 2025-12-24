@@ -60,7 +60,7 @@ export default function LoginPage() {
         throw new Error("Phản hồi từ server không hợp lệ");
       }
       // Call login function from context
-      auth.login(user, access_token);
+      auth.login(access_token, user);
 
       toast({ title: "Đăng nhập thành công!" });
       router.push("/");
