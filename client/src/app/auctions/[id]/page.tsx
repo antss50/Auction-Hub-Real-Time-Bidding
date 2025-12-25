@@ -632,19 +632,19 @@ export default function AuctionDetailPage() {
                         <div className="space-y-4 text-gray-700">
                             <div className="flex justify-between items-center py-2 border-b border-dashed">
                                 <span className="text-gray-600">Giá trúng đấu giá:</span>
-                                <span className="font-bold text-lg">{winnerReqData.paymentBreakdown?.winningAmount?.toLocaleString()} đ</span>
+                                <span className="font-bold text-lg">{parseInt(winnerReqData.paymentBreakdown?.winningAmount).toLocaleString()} đ</span>
                             </div>
                             <div className="flex justify-between items-center py-2 border-b border-dashed">
                                 <span className="text-gray-600">Tiền đặt trước (Đã trừ):</span>
-                                <span className="font-semibold text-green-600">- {winnerReqData.paymentBreakdown?.depositAlreadyPaid?.toLocaleString()} đ</span>
+                                <span className="font-semibold text-green-600">- {parseInt(winnerReqData.paymentBreakdown?.depositAlreadyPaid).toLocaleString()} đ</span>
                             </div>
                             <div className="flex justify-between items-center py-2 border-b border-dashed">
                                 <span className="text-gray-600">Phí hồ sơ:</span>
-                                <span className="font-semibold text-orange-600">+ {winnerReqData.paymentBreakdown?.dossierFee?.toLocaleString()} đ</span>
+                                <span className="font-semibold text-orange-600">+ {parseInt(winnerReqData.paymentBreakdown?.dossierFee).toLocaleString()} đ</span>
                             </div>
                             <div className="flex justify-between items-center py-4 bg-orange-50 px-3 rounded-lg mt-2">
                                 <span className="font-bold text-lg text-gray-800">Tổng tiền phải nộp:</span>
-                                <span className="font-bold text-2xl text-red-600">{winnerReqData.paymentBreakdown?.totalDue?.toLocaleString()} đ</span>
+                                <span className="font-bold text-2xl text-red-600">{parseInt(winnerReqData.paymentBreakdown?.totalDue).toLocaleString()} đ</span>
                             </div>
                         </div>
 
@@ -692,7 +692,7 @@ export default function AuctionDetailPage() {
                                 <span className="font-bold col-span-2">{winnerPayData.bankInfo?.account_name}</span>
 
                                 <span className="text-gray-500">Số tiền:</span>
-                                <span className="font-bold text-red-600 text-lg col-span-2">{winnerPayData.amount?.toLocaleString()} đ</span>
+                                <span className="font-bold text-red-600 text-lg col-span-2">{parseInt(winnerPayData.amount).toLocaleString()} đ</span>
 
                                 <span className="text-gray-500 mt-1">Nội dung:</span>
                                 <div className="col-span-2">
