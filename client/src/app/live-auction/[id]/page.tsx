@@ -13,6 +13,10 @@ import { CountdownTimer } from '../../../components/CountdownTimer';
 import { toast } from "sonner";
 import Cookies from 'js-cookie';
 import { useAuth } from '../../../contexts/AuthContext';
+import {
+    getAuctionById,
+} from '../../../services/auctionsService';
+import { AuctionDetail } from '../../../types/auction';
 
 interface BidHistoryItem {
     bidId: string;
@@ -61,8 +65,24 @@ export default function LiveAuctionPage() {
     const [timeLeft, setTimeLeft] = useState<number>(0);
     const [localHasEnded, setLocalHasEnded] = useState(false);
 
+    const [auction, setAuction] = useState<AuctionDetail | null>(null);
+    const [isLoading, setIsLoading] = useState(true);
+
+    const loadData = async () => {
+        if (!id) return;
+        try {
+            const auctionData = await getAuctionById(id);
+            setAuction(auctionData);
+        } catch (error) {
+            console.error(error);
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
     // --- SOCKET CONNECTION ---
     useEffect(() => {
+        loadData();
         const token = Cookies.get('access_token');
 
         if (!token) {
@@ -249,6 +269,9 @@ export default function LiveAuctionPage() {
         }
     };
 
+    if (isLoading) return <div className="min-h-screen pt-20 text-center">Đang tải...</div>;
+    if (!auction) return notFound();
+
     if (!auctionState) {
         return <div className="min-h-screen flex items-center justify-center text-xl">Đang kết nối vào phòng đấu giá...</div>;
     }
@@ -303,7 +326,7 @@ export default function LiveAuctionPage() {
                             </div>
                         </div>
                         <div className="relative w-full h-[500px] bg-gray-200 rounded-xl overflow-hidden shadow-inner">
-                            <Image src="/placeholder-image.jpg" alt="Auction Item" fill className="object-contain" />
+                            <Image src={auction.images[0]?.url || '/placeholder.jpg'} alt={auction.name} fill className="object-contain bg-gray-100" />
                         </div>
                     </div>
 
