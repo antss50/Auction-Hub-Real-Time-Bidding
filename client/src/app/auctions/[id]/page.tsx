@@ -19,7 +19,8 @@ import {
     getWinnerPaymentRequirements,
     submitWinnerPayment,
     verifyWinnerPayment,
-    exportContractPdfVi
+    exportContractPdfVi,
+    withdrawRegistration
 } from '../../../services/auctionsService';
 import { AuctionDetail } from '../../../types/auction';
 import { toast } from "sonner";
@@ -339,6 +340,34 @@ export default function AuctionDetailPage() {
         }
     };
 
+    // XỬ LÝ HỦY ĐĂNG KÝ (API 6) ---
+    const handleWithdraw = async () => {
+        // 1. Hỏi lý do hủy
+        const reason = window.prompt("⚠️ Bạn có chắc chắn muốn hủy đăng ký tham gia đấu giá này không?\n\nVui lòng nhập lý do hủy hồ sơ:", "Thay đổi kế hoạch cá nhân");
+
+        // Nếu user bấm Cancel hoặc không nhập gì
+        if (reason === null) return;
+        if (!reason.trim()) {
+            toast.warning("Vui lòng nhập lý do để hủy đăng ký.");
+            return;
+        }
+
+        try {
+            // 2. Gọi API
+            const res = await withdrawRegistration({
+                auctionId: id,
+                withdrawalReason: reason
+            });
+
+            // 3. Xử lý thành công
+            if (res && res.success) {
+                toast.success("Đã hủy hồ sơ đăng ký thành công.");
+                loadData(); // Reload lại để cập nhật giao diện
+            }
+        } catch (error: any) {
+            toast.error(error.message || "Lỗi khi hủy hồ sơ");
+        }
+    };
 
     // --- RENDER ACTION BUTTON ---
     const renderActionButton = () => {
@@ -410,7 +439,21 @@ export default function AuctionDetailPage() {
         }
 
         if (currentState === "PENDING_DOCUMENT_REVIEW") {
-            return <button disabled className="w-full py-3 rounded-lg bg-yellow-100 text-yellow-700 font-bold border border-yellow-300 mb-3 cursor-wait">⏳ Chờ phê duyệt</button>;
+            return (
+                <div className="flex flex-col gap-2 mb-3">
+                    <button disabled className="w-full py-3 rounded-lg bg-yellow-100 text-yellow-700 font-bold border border-yellow-300 cursor-wait">
+                        ⏳ Chờ phê duyệt hồ sơ
+                    </button>
+
+                    <button
+                        onClick={handleWithdraw}
+                        className="w-full py-3 px-4 rounded-xl text-gray-700 hover:text-red-600 bg-white hover:bg-red-50 text-sm font-semibold transition-all duration-300 border-2 border-gray-100 hover:border-red-200 shadow-sm hover:shadow-md flex items-center justify-center gap-2 group"
+                    >
+                        <span className="text-base group-hover:rotate-12 transition-transform duration-300">🚫</span>
+                        <span>Hủy đăng ký</span>
+                    </button>
+                </div>
+            );
         }
 
         if (currentState === "DOCUMENTS_VERIFIED") {
