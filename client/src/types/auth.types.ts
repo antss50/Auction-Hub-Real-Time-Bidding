@@ -1,11 +1,17 @@
 export type User = {
-    id: string;
-    email: string;
-    full_name: string;
-    phone_number: string | null;
-    user_type: 'individual' | 'business';
-    identity_number: string | null;
-    tax_id?: string | null;
+  id: string;
+  email: string;
+  phoneNumber: string;
+  fullName: string;
+  identityNumber: string;
+  userType: 'individual' | 'business';
+  role: 'bidder' | 'auctioneer' | 'admin' | 'super_admin';
+  avatarUrl: string | null;
+  isVerified: boolean;
+  isBanned: boolean;
+  ratingScore: string;
+  totalRatings: number;
+  createdAt: string;
 };
 
 export type LoginResponse = {

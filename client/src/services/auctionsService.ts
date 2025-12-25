@@ -19,7 +19,7 @@ export const getAuctionRegistration = async (auctionId: string): Promise<ApiResp
     }
 };
 
-// 1. API Đăng ký tham gia (Upload file)
+// API Đăng ký tham gia (Upload file)
 export const registerToBid = async (formData: FormData): Promise<ApiResponse<any> | null> => {
     try {
         const response = await apiClient.post<ApiResponse<any>>('/register-to-bid', formData, {
@@ -34,13 +34,13 @@ export const registerToBid = async (formData: FormData): Promise<ApiResponse<any
     }
 };
 
-// 2. Submit Deposit
+// Submit Deposit
 export const submitDeposit = async (data: { registrationId: string; auctionId: string; amount: number }) => {
     const response = await apiClient.post<ApiResponse<PaymentInitiationData>>('/register-to-bid/submit-deposit', data);
     return response.data.data; 
 };
 
-// 3. Verify Payment
+// Verify Payment
 export const verifyDepositPayment = async (data: { sessionId: string; registrationId: string }): Promise<PaymentVerificationResult | null> => {
     try {
         const response = await apiClient.post<ApiResponse<PaymentVerificationResult>>('/register-to-bid/verify-deposit-payment', data);
@@ -53,7 +53,7 @@ export const verifyDepositPayment = async (data: { sessionId: string; registrati
     }
 };
 
-// 4. API Check-in (Điểm danh)
+// API Check-in (Điểm danh)
 export const checkInAuction = async (auctionId: string): Promise<ApiResponse<any> | null> => {
     try {
         const response = await apiClient.post<ApiResponse<any>>('/register-to-bid/check-in', { auctionId });
@@ -64,7 +64,7 @@ export const checkInAuction = async (auctionId: string): Promise<ApiResponse<any
     }
 };
 
-// 5. API Đặt giá (Manual Bid)
+// API Đặt giá (Manual Bid)
 export const placeManualBid = async (data: { auctionId: string; amount: number }): Promise<ApiResponse<any> | null> => {
     try {
         const response = await apiClient.post<ApiResponse<any>>('/manual-bid', data);
@@ -72,5 +72,75 @@ export const placeManualBid = async (data: { auctionId: string; amount: number }
     } catch (error: any) {
         const message = error.response?.data?.error?.message || "Lỗi điểm danh không xác định";
         throw new Error(message);
+    }
+};
+
+// Lấy kết quả đấu giá
+export const getAuctionResult = async (auctionId: string) => {
+    try {
+        const response = await apiClient.get(`/auction-finalization/results/${auctionId}`);
+        return response.data;
+    } catch (error) {
+        return null;
+    }
+};
+
+// Lấy thông tin yêu cầu thanh toán cho winner
+export const getWinnerPaymentRequirements = async (auctionId: string) => {
+    try {
+        const response = await apiClient.get(`/auction-finalization/winner-payment-requirements/${auctionId}`);
+        return response.data;
+    } catch (error) {
+        throw error;
+    }
+};
+
+// Khởi tạo thanh toán cho winner (Winner Payment)
+export const submitWinnerPayment = async (auctionId: string) => {
+    try {
+        const response = await apiClient.post('/auction-finalization/submit-winner-payment', { auctionId });
+        return response.data.data; // Trả về paymentUrl, qrCode, bankInfo...
+    } catch (error) {
+        throw error;
+    }
+};
+
+// Xác nhận thanh toán winner
+export const verifyWinnerPayment = async (data: { sessionId: string; auctionId: string }) => {
+    try {
+        const response = await apiClient.post('/auction-finalization/verify-winner-payment', data);
+        return response.data;
+    } catch (error: any) {
+        const message =
+            error.response?.data?.error?.message ||
+            "Lỗi xác nhận thanh toán không xác định";
+        throw new Error(message);
+    }
+};
+
+// Export PDF Hợp đồng (Tiếng Việt)
+// Lưu ý: Hàm này trả về blob để tải file
+export const exportContractPdfVi = async (contractId: string) => {
+    try {
+        const response = await apiClient.get(`/contracts/${contractId}/pdf/vi`, {
+            responseType: 'blob' // Quan trọng để tải file
+        });
+        return response.data;
+    } catch (error) {
+        console.error("Error downloading contract:", error);
+        throw error;
+    }
+};
+
+// Admin từ chối giá đấu gần nhất
+export const denyBid = async (bidId: string, reason: string) => {
+    try {
+        const response = await apiClient.post('/manual-bid/deny', {
+            bidId,
+            reason
+        });
+        return response.data;
+    } catch (error) {
+        throw error;
     }
 };

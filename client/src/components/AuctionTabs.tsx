@@ -21,7 +21,7 @@ export default function AuctionTabs({
     return (
         <div className="min-h-[300px]">
             {/* Tabs header */}
-            <div className="flex space-x-8 text-sm font-medium border-b">
+            <div className="flex w-full justify-between text-sm font-medium border-b">
                 {[
                     { id: "details", label: "Thông tin chi tiết" },
                     { id: "file", label: "Hồ sơ mời đấu giá" },

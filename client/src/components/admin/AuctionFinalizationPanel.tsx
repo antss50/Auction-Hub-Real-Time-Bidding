@@ -10,6 +10,8 @@ interface Props {
   auctionId: string;
   propertyOwner: {
     name: string;
+    email: string;
+    phone: string;
   };
   status: string;
 }
@@ -27,21 +29,27 @@ export const AuctionFinalizationPanel = ({ auctionId, propertyOwner, status }: P
     
     try {
         // --- BƯỚC 1: ĐẢM BẢO FINALIZE ---
-        // Logic này giữ nguyên là ổn, nhưng hãy đảm bảo payload đúng
         let currentFinalizedState = isFinalized; 
         
         // Kiểm tra phiên đấu giá đã kết thúc chưa (dựa trên status từ props)
-        const isAuctionActive = ['scheduled', 'upcoming', 'live', 'happening'].includes(status);
+        const isAuctionActive = ['scheduled', 'live'].includes(status);
 
         if (!currentFinalizedState && !isAuctionActive) {
             try {
-                // ... (Code gọi finalize giữ nguyên) ...
-                // Sau khi gọi xong:
-                currentFinalizedState = true;
-                setIsFinalized(true);
+                const finalizePayload = {
+                    auctionId: auctionId,
+                    notes: "Finalized after successful bidding session",
+                    skipAutoEvaluation: false
+                };
+
+                const finalizeRes = await AdminActionService.finalizeAuction(finalizePayload);
+                if (finalizeRes) {
+                    currentFinalizedState = true;
+                    setIsFinalized(true); 
+                }
             } catch (err) {
                 console.warn("Finalize warning:", err);
-                currentFinalizedState = true; // Vẫn cho đi tiếp
+                currentFinalizedState = true; 
             }
         } else {
             currentFinalizedState = true;
@@ -374,10 +382,22 @@ export const AuctionFinalizationPanel = ({ auctionId, propertyOwner, status }: P
                                         <p className="text-gray-500 text-xs">Họ và tên</p>
                                         <p className="font-medium text-gray-900">{propertyOwner?.name || "Chưa cập nhật"}</p>
                                     </div>
-                                    <div>
+                                    {/* <div>
                                         <p className="text-gray-500 text-xs">Mã định danh</p>
                                         <p className="font-mono text-xs text-gray-600 truncate bg-gray-50 p-1 rounded">
-                                            {data.sellerUserId || "N/A"}
+                                            {data.propertyOwner?.identityNumber || "N/A"}
+                                        </p>
+                                    </div> */}
+                                    <div>
+                                        <p className="text-gray-500 text-xs">Email:</p>
+                                        <p className="font-mono text-xs text-gray-600 truncate bg-gray-50 p-1 rounded">
+                                            {data.propertyOwner?.email || "N/A"}
+                                        </p>
+                                    </div>
+                                    <div>
+                                        <p className="text-gray-500 text-xs">Số điện thoại:</p>
+                                        <p className="font-mono text-xs text-gray-600 truncate bg-gray-50 p-1 rounded">
+                                            {data.propertyOwner?.phone || "N/A"}
                                         </p>
                                     </div>
                                 </div>
