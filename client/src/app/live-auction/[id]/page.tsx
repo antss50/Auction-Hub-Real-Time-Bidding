@@ -133,7 +133,7 @@ export default function LiveAuctionPage() {
             }
 
             // [LOGIC 2] Tự động tải lại dữ liệu (Manual Reload State)
-            // Vì backend không bắn event update, ta gọi 'joinAuction' để server gửi lại 'auctionState' mới nhất
+            // Gọi 'joinAuction' để server gửi lại 'auctionState' mới nhất
             console.log("Bid denied, reloading auction state...");
             newSocket.emit('joinAuction', { auctionId: id });
 
