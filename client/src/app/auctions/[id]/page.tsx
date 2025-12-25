@@ -384,7 +384,7 @@ export default function AuctionDetailPage() {
                                 onClick={handleDownloadContract}
                                 className="w-full py-2 rounded-lg border border-gray-400 text-gray-700 font-semibold hover:bg-gray-100 transition"
                             >
-                                👁️ Xem hợp đồng nháp
+                                Xem hợp đồng nháp
                             </button>
                         </div>
                     </div>
