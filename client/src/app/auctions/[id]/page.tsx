@@ -15,7 +15,6 @@ import {
     submitDeposit,
     verifyDepositPayment,
     checkInAuction,
-    // Import các hàm mới
     getAuctionResult,
     getWinnerPaymentRequirements,
     submitWinnerPayment,
@@ -82,7 +81,7 @@ export default function AuctionDetailPage() {
     const router = useRouter();
     const id = params.id as string;
 
-    // [THÊM MỚI] State xác định có phải winner không
+    // State xác định có phải winner không
     const [isWinner, setIsWinner] = useState(false);
 
     const [auction, setAuction] = useState<AuctionDetail | null>(null);
@@ -140,7 +139,7 @@ export default function AuctionDetailPage() {
                         setAuctionResult(resultRes.data);
                     }
 
-                    // [LOGIC MỚI] Gọi API 18 để lấy thông tin thanh toán & check Winner
+                    // Gọi API 18 để lấy thông tin thanh toán & check Winner
                     try {
                         const paymentReq = await getWinnerPaymentRequirements(id);
                         if (paymentReq?.success) {
@@ -380,7 +379,7 @@ export default function AuctionDetailPage() {
                                 💰 Chi tiết thanh toán & Hoàn tất
                             </button>
 
-                            {/* Nút xem hợp đồng nháp (nếu muốn) */}
+                            {/* Nút xem hợp đồng nháp */}
                             <button
                                 onClick={handleDownloadContract}
                                 className="w-full py-2 rounded-lg border border-gray-400 text-gray-700 font-semibold hover:bg-gray-100 transition"
@@ -393,7 +392,6 @@ export default function AuctionDetailPage() {
             }
         }
 
-        // --- LOGIC BÌNH THƯỜNG ---
         const now = new Date();
         const isSuccess = registrationResponse?.success;
         const currentState = registrationResponse?.data?.currentState;
@@ -623,7 +621,7 @@ export default function AuctionDetailPage() {
                 </div>
             )}
 
-            {/* MODAL 3 [MỚI]: CHI TIẾT THANH TOÁN WINNER (API 18) */}
+            {/* MODAL 3: CHI TIẾT THANH TOÁN WINNER (API 18) */}
             {showWinnerReqModal && winnerReqData && (
                 <div className="fixed inset-0 bg-black bg-opacity-60 z-50 flex items-center justify-center p-4">
                     <div className="bg-white rounded-2xl p-6 w-[500px] shadow-2xl border-t-8 border-blue-600 animate-in fade-in zoom-in duration-200">
@@ -665,7 +663,7 @@ export default function AuctionDetailPage() {
                 </div>
             )}
 
-            {/* MODAL 4 [MỚI]: THANH TOÁN WINNER - QR/STRIPE (API 19) */}
+            {/* MODAL 4: THANH TOÁN WINNER - QR/STRIPE (API 19) */}
             {showWinnerPayModal && winnerPayData && (
                 <div className="fixed inset-0 bg-black bg-opacity-60 z-50 flex items-center justify-center p-4">
                     <div className="bg-white rounded-xl p-6 w-[600px] max-w-full shadow-2xl max-h-[90vh] overflow-y-auto">
