@@ -48,32 +48,43 @@ export default function Navbar() {
         {isAuthenticated ? (
           // 1. Nếu đã đăng nhập (Authenticated)
           <DropdownMenu>
-            {<DropdownMenuTrigger asChild>
+            <DropdownMenuTrigger asChild>
               <Avatar className="cursor-pointer">
-                <AvatarImage src={user?.avatarUrl || ""} alt={user?.fullName || "User"} />
+                <AvatarImage
+                  src={user?.avatarUrl || ""}
+                  alt={user?.fullName || "User"}
+                />
                 <AvatarFallback>
-                  {user?.fullName.charAt(0).toUpperCase() || "U"}
+                  {user?.fullName?.charAt(0).toUpperCase() || "U"}
                 </AvatarFallback>
               </Avatar>
-            </DropdownMenuTrigger>}
+            </DropdownMenuTrigger>
+
             <DropdownMenuContent align="end" className="w-56">
               <DropdownMenuLabel>
                 Chào, {user?.fullName || "Người dùng"}
                 <p className="text-xs font-normal text-gray-500">{user?.email}</p>
               </DropdownMenuLabel>
+
+              {(user?.role === "admin" || user?.role === "super_admin") && (
+                <>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem asChild className="cursor-pointer">
+                    <Link href="/admin">Giao diện Admin</Link>
+                  </DropdownMenuItem>
+                </>
+              )}
+
               <DropdownMenuSeparator />
-              <DropdownMenuItem asChild className="cursor-pointer">
-                <Link href="/dashboard/profile">Quản lý tài khoản</Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem asChild className="cursor-pointer">
-                <Link href="/dashboard/my-auctions">Phiên đấu giá của tôi</Link>
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={handleLogout} className="text-red-500 cursor-pointer">
+              <DropdownMenuItem
+                onClick={handleLogout}
+                className="text-red-500 cursor-pointer"
+              >
                 Đăng xuất
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
+
         ) : (
           // 2. Nếu chưa đăng nhập (Original Code)
           <>

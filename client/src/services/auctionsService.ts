@@ -144,3 +144,13 @@ export const denyBid = async (bidId: string, reason: string) => {
         throw error;
     }
 };
+
+// Rút hồ sơ đăng ký (Withdraw Registration)
+export const withdrawRegistration = async (data: { auctionId: string; withdrawalReason: string }) => {
+    try {
+        const response = await apiClient.post('/register-to-bid/withdraw', data);
+        return response.data;
+    } catch (error) {
+        throw error;
+    }
+};

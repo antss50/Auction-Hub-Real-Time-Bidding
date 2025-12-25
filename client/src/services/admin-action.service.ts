@@ -1,4 +1,5 @@
-import apiClient from '@auction-hub/axios'; 
+import apiClient from '@auction-hub/axios';
+import { DashboardAnalyticsData, ApiResponse, AnalyticsParams } from '../types/admin-dashboard';
 
 export const AdminActionService = {
   // Deny Bid
@@ -43,5 +44,21 @@ export const AdminActionService = {
       responseType: 'blob'
     })
     return res.data;
+
   },
+
+  }
+;
+
+// Lấy số liệu thống kê Dashboard
+export const getDashboardAnalytics = async (params?: AnalyticsParams) => {
+    const response = await apiClient.get<ApiResponse<DashboardAnalyticsData>>('/dashboard/analytics', { params });
+    return response.data;
+};
+
+// Làm mới dữ liệu
+export const refreshAnalyticsView = async () => {
+    const response = await apiClient.post('/dashboard/analytics/refresh');
+    return response.data;
+
 };
