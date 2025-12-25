@@ -6,6 +6,7 @@ import { getImageUrl } from '../../app/utils/format';
 import RichTextEditor  from '../admin/editor/RichTextEditor';
 
 import Image from 'next/image';
+import { property } from 'zod';
 
 interface Props {
   isOpen: boolean;
@@ -36,10 +37,16 @@ export const AuctionFormModal = ({ isOpen, onClose, onSubmit, initialData }: Pro
     assetWardId: 0, 
     assetProvinceId: 0, 
     // Nested Object: Property Owner
-    ownerName: '',
-    ownerEmail: '',
-    ownerPhone: '',
-    ownerOrg: '',
+    propertyOwner: { 
+      id: '',
+      fullName: '',
+      email: '',
+      phoneNumber: '',
+      identityNumber: '',
+      organization: '',
+      userType: '',
+      taxId: ''
+    },
     images: [] as { publicId:string | null; url: string }[]
   });
 
@@ -104,10 +111,16 @@ export const AuctionFormModal = ({ isOpen, onClose, onSubmit, initialData }: Pro
         assetProvinceId: initialData.assetProvinceId || 0,
 
         // Flatten propertyOwner để dễ bind vào input
-        ownerName: initialData.propertyOwner?.name || '',
-        ownerEmail: initialData.propertyOwner?.email || '',
-        ownerPhone: initialData.propertyOwner?.phone || '',
-        ownerOrg: initialData.propertyOwner?.organization || '',
+        propertyOwner: initialData.propertyOwner?.map ((owner : any) => ({
+          id: owner.id || '',
+          fullName: owner.fullName || '',
+          email: owner.email || '',
+          phoneNumber: owner.phoneNumber || '',
+          identityNumber: owner.identityNumber || '',
+          organization: owner.organization || '',
+          userType: owner.userType || '',
+          taxId: owner.taxId || ''
+        })) || [],
 
         images: initialData.images?.map((img: any) => ({
           publicId: img.publicId || img.url, 
@@ -226,10 +239,13 @@ export const AuctionFormModal = ({ isOpen, onClose, onSubmit, initialData }: Pro
 
       // Nested Object: Property Owner
       propertyOwner: {
-        name: formData.ownerName,
-        email: formData.ownerEmail,
-        phone: formData.ownerPhone,
-        organization: formData.ownerOrg
+        fullName: formData.propertyOwner.fullName,
+        email: formData.propertyOwner.email,
+        phoneNumber: formData.propertyOwner.phoneNumber,
+        identityNumber: formData.propertyOwner.identityNumber,
+        organization: formData.propertyOwner.organization,
+        userType: formData.propertyOwner.userType,
+        taxId: formData.propertyOwner.taxId
       },
       // status: computedStatus
     };
@@ -396,22 +412,27 @@ export const AuctionFormModal = ({ isOpen, onClose, onSubmit, initialData }: Pro
              <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Tên chủ sở hữu</label>
               <input type="text" className="w-full border p-2 rounded"
-                value={formData.ownerName} onChange={e => setFormData({...formData, ownerName: e.target.value})} />
+                value={formData.propertyOwner.fullName} onChange={e => setFormData({...formData, propertyOwner: {...formData.propertyOwner, fullName: e.target.value}})} />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">CCCD</label>
+              <input type="text" className="w-full border p-2 rounded"
+                value={formData.propertyOwner.identityNumber} onChange={e => setFormData({...formData, propertyOwner: {...formData.propertyOwner, identityNumber: e.target.value}})} />
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
               <input type="email" className="w-full border p-2 rounded"
-                value={formData.ownerEmail} onChange={e => setFormData({...formData, ownerEmail: e.target.value})} />
+                value={formData.propertyOwner.email} onChange={e => setFormData({...formData, propertyOwner: {...formData.propertyOwner, email: e.target.value}})} />
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Số điện thoại</label>
               <input type="text" className="w-full border p-2 rounded"
-                value={formData.ownerPhone} onChange={e => setFormData({...formData, ownerPhone: e.target.value})} />
+                value={formData.propertyOwner.phoneNumber} onChange={e => setFormData({...formData, propertyOwner: {...formData.propertyOwner, phoneNumber: e.target.value}})} />
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Tổ chức</label>
               <input type="text" className="w-full border p-2 rounded"
-                value={formData.ownerOrg} onChange={e => setFormData({...formData, ownerOrg: e.target.value})} />
+                value={formData.propertyOwner.organization} onChange={e => setFormData({...formData, propertyOwner: {...formData.propertyOwner, organization: e.target.value}})} />
             </div>
 
             <div className="md:col-span-2 border-b pb-2 mb-2 font-bold text-gray-700 mt-4">Thông tin địa điểm</div>
