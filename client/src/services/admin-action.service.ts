@@ -44,11 +44,4 @@ export const AdminActionService = {
     })
     return res.data;
   },
-
-  downloadContract : async (contractId: string) => {
-    const res =await apiClient.get(`/contracts/${contractId}/pdf/vi`, {
-      responseType: 'blob'
-    })
-    return res.data;
-  }
 };

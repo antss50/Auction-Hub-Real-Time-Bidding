@@ -17,7 +17,7 @@ interface Props {
   status: string;
 }
 
-export const AuctionFinalizationPanel = ({ auctionId, status }: Props) => {
+export const AuctionFinalizationPanel = ({ auctionId, propertyOwner, status }: Props) => {
   // Cập nhật các Tab mới: Evaluate, History, Contract
   const [activeTab, setActiveTab] = useState<'evaluate' | 'history' | 'contract'>('evaluate');
   const [loading, setLoading] = useState(false);
@@ -25,13 +25,13 @@ export const AuctionFinalizationPanel = ({ auctionId, status }: Props) => {
   const [isFinalized, setIsFinalized] = useState(false);
   const processAndFetch = async () => {
     setLoading(true);
-    setData(null);
+    
 
     try {
         // --- BƯỚC 1: FINALIZE (Nếu cần) ---
-        let finalizeSuccess = isFinalized; 
+        let currentFinalizedState = isFinalized; 
         const isAuctionActive = ['scheduled', 'live'].includes(status);
-        if (!finalizeSuccess && !isAuctionActive) {
+        if (!currentFinalizedState && !isAuctionActive) {
             try {
                 const finalizePayload = {
                     auctionId: auctionId,
@@ -53,7 +53,7 @@ export const AuctionFinalizationPanel = ({ auctionId, status }: Props) => {
         }
 
         // --- BƯỚC 2: FETCH DATA THEO TAB ---
-        if (finalizeSuccess) {
+        if (currentFinalizedState) {
             let res;
             
             if (activeTab === 'evaluate') {
@@ -61,8 +61,22 @@ export const AuctionFinalizationPanel = ({ auctionId, status }: Props) => {
             } else if (activeTab === 'history') {
                 res = await AdminActionService.getResults(auctionId);
             } else if (activeTab === 'contract') {
-                // Tab Hợp đồng tạm thời chưa xử lý (có thể gọi results để check status hợp đồng sau này)
-                 res = await AdminActionService.getContract(auctionId);
+                // 1. Lấy thông tin kết quả để có ContractID
+                const resultRes = await AdminActionService.getResults(auctionId);
+                
+                // 2. Kiểm tra xem đã có ContractID chưa
+                if (resultRes?.data?.contract?.contractId) {
+                    const contractId = resultRes.data.contract.contractId;
+                    console.log("Fetching contract ID:", contractId); // Debug 1
+                    
+                    // 3. Gọi lấy chi tiết hợp đồng
+                    res = await AdminActionService.getContract(contractId);
+                    console.log("Contract Data:", res.data); 
+                } else {
+                    console.log("Chưa tìm thấy contractId trong kết quả");
+                    setData(null); // Không có hợp đồng
+                    return;
+                }
             }
 
             if (res && res.success) {
@@ -82,6 +96,39 @@ export const AuctionFinalizationPanel = ({ auctionId, status }: Props) => {
   useEffect(() => {
     if (auctionId) processAndFetch();
   }, [auctionId, activeTab]);
+
+  const handleDownloadPdf = async () => {
+    if (!data || !data.id) return;
+    
+    setLoading(true);
+    try {
+      // 1. Gọi API lấy Blob
+      const blob = await AdminActionService.downloadContract(data.id);
+      
+      // 2. Tạo URL ảo từ Blob
+      const url = window.URL.createObjectURL(new Blob([blob]));
+      
+      // 3. Tạo thẻ <a> ẩn để kích hoạt tải xuống
+      const link = document.createElement('a');
+      link.href = url;
+      // Đặt tên file khi tải về
+      link.setAttribute('download', `Hop-dong-${data.auctionCode || 'mua-ban'}.pdf`);
+      
+      // 4. Append vào body, click và dọn dẹp
+      document.body.appendChild(link);
+      link.click();
+      
+      link.parentNode?.removeChild(link);
+      window.URL.revokeObjectURL(url); // Xóa URL ảo để giải phóng bộ nhớ
+      
+      toast.success("Tải hợp đồng thành công!");
+    } catch (error) {
+      console.error("Download error:", error);
+      toast.error("Không thể tải hợp đồng. Vui lòng thử lại.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
@@ -273,26 +320,108 @@ export const AuctionFinalizationPanel = ({ auctionId, status }: Props) => {
                 {/* === TAB 3: CONTRACT (HỢP ĐỒNG) === */}
                 {/* === TAB 3: CONTRACT (HỢP ĐỒNG) === */}
                 {activeTab === 'contract' && (
-                    <div className="flex flex-col items-center justify-center py-16 text-center animate-in fade-in">
-                        <div className="bg-gray-100 p-4 rounded-full mb-4">
-                            <FileSignature size={40} className="text-gray-400" />
+                    <div className="animate-in fade-in space-y-6">
+                        {data && data.id ? (
+                            <div className="max-w-3xl mx-auto">
+                                {/* Contract Card Container */}
+                                <div className="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
+                    
+                                {/* 1. Header Card: ID & Trạng thái */}
+                                <div className="bg-gray-50 px-6 py-4 border-b border-gray-200 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                                    <div className="flex items-center gap-3">
+                                        <div className="bg-blue-100 p-2 rounded-lg text-blue-600">
+                                            <FileSignature size={24} />
+                                        </div>
+                                        <div>
+                                            <h4 className="font-bold text-gray-900">Hợp đồng Mua bán Tài sản</h4>
+                                            <p className="text-xs text-gray-500 font-mono">ID: {data.id}</p>
+                                        </div>
+                                    </div>
+                        
+                                    {/* Status Badge */}
+                                    <div className={`px-4 py-1.5 rounded-full text-sm font-bold border flex items-center gap-2 ${
+                                        data.status === 'signed' ? 'bg-green-50 text-green-700 border-green-200' : 'bg-yellow-50 text-yellow-700 border-yellow-200'
+                                    }`}>
+                                        <span className={`w-2 h-2 rounded-full ${data.status === 'signed' ? 'bg-green-600' : 'bg-yellow-600'}`}></span>
+                                        {data.status === 'signed' ? "Đã kí kết" : "Chờ thanh toán"}
+                                </div>
+                            </div>
+
+                        {/* 2. Body Card: Thông tin chi tiết */}
+                        <div className="p-8">
+                        
+                            {/* Tên cuộc đấu giá & Giá trị */}
+                            <div className="mb-8 text-center pb-8 border-b border-dashed border-gray-200">
+                                <p className="text-sm text-gray-500 uppercase tracking-wide mb-1">Tài sản đấu giá</p>
+                                <h3 className="text-xl font-bold text-gray-900 mb-4">{data.auctionName}</h3>
+                            
+                                <div className="inline-block bg-rose-50 px-6 py-3 rounded-xl border border-rose-100">
+                                    <p className="text-xs text-rose-600 font-bold uppercase mb-1">Giá trị hợp đồng</p>
+                                        <p className="text-3xl font-bold text-rose-700">{formatCurrency(Number(data.price))}</p>
+                                </div>
+                            </div>
+
+                            {/* Thông tin 2 bên: Bán & Mua */}
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                            
+                                {/* Bên A: Người Bán */}
+                                <div className="space-y-3">
+                                    <h5 className="font-bold text-gray-800 border-b pb-2 flex items-center gap-2">
+                                        <span className="bg-gray-200 text-xs px-2 py-0.5 rounded text-gray-700">Bên A</span>
+                                        Chủ sở hữu tài sản
+                                    </h5>
+                                    <div className="space-y-2 text-sm">
+                                        <div>
+                                            <p className="text-gray-500 text-xs">Họ và tên</p>
+                                            <p className="font-medium text-gray-900">{propertyOwner?.fullName || "Chưa cập nhật"}</p>
+                                        </div>
+                                        <div>
+                                            <p className="text-gray-500 text-xs">Số CCCD</p>
+                                            <p className="font-mono text-xs text-gray-600 truncate bg-gray-50 p-1 rounded">{data.sellerIdentityNumber || "N/A"}</p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Bên B: Người Mua */}
+                                <div className="space-y-3">
+                                    <h5 className="font-bold text-gray-800 border-b pb-2 flex items-center gap-2">
+                                        <span className="bg-gray-200 text-xs px-2 py-0.5 rounded text-gray-700">Bên B</span>
+                                        Người trúng đấu giá
+                                    </h5>
+                                    <div className="space-y-2 text-sm">
+                                        <div>
+                                            <p className="text-gray-500 text-xs">Họ và tên</p>
+                                            <p className="font-medium text-gray-900">{data.buyerName || data.buyerFullName || "Chưa cập nhật"}</p>
+                                        </div>
+                                        <div>
+                                            <p className="text-gray-500 text-xs">Mã định danh</p>
+                                            <p className="font-mono text-xs text-gray-600 truncate bg-gray-50 p-1 rounded">{data.buyerIdentityNumber || "N/A"}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
-                        {/* Nút hành động giả lập (ví dụ tải PDF) */}
-                        <button
-                          onClick={handleDownloadPdf}
-                          disabled={loading}
-                         className="text-blue-600 hover:underline font-medium hover:text-blue-800 transition-colors">
-                            {loading ? (
-            <Loader2 size={16} className="animate-spin" />
-        ) : (
-            <Download size={16} />
-        )}
-        {loading ? "Đang tải..." : "Tải về bản PDF"}
-                        </button>
+
+                        {/* 3. Footer Card: Metadata & Action */}
+                        <div className="bg-gray-50 px-6 py-4 border-t border-gray-200 flex justify-between items-center text-xs text-gray-500">
+                            <div className="flex gap-4">
+                                <span>Ngày tạo: <span className="font-medium text-gray-700">{new Date(data.createdAt).toLocaleString('vi-VN')}</span></span>
+                                {data.updatedAt && (
+                                    <span>Cập nhật lần cuối: <span className="font-medium text-gray-700">{new Date(data.updatedAt).toLocaleString('vi-VN')}</span></span>
+                                )}
+                            </div>
+                            {/* Nút hành động giả lập (ví dụ tải PDF) */}
+                            <button
+                                onClick={handleDownloadPdf}
+                                disabled={loading}
+                                className="text-blue-600 hover:underline font-medium hover:text-blue-800 transition-colors">
+                                {loading ? ( <Loader2 size={16} className="animate-spin" />) : (<Download size={16} />)}
+                                {loading ? "Đang tải..." : "Tải về bản PDF"}
+                            </button>
+                        </div>
                     </div>
                 </div>
-            </div>
-        ) : (
+            ) : (
             <div className="flex flex-col items-center justify-center py-16 text-center">
                 <div className="bg-gray-100 p-6 rounded-full mb-4">
                     <FileSignature size={48} className="text-gray-300" />

@@ -8,7 +8,6 @@ import { getImageUrl } from '../../app/utils/format';
 import RichTextEditor  from '../admin/editor/RichTextEditor';
 
 import Image from 'next/image';
-import { property } from 'zod';
 
 interface Props {
   isOpen: boolean;
@@ -113,17 +112,44 @@ export const AuctionFormModal = ({ isOpen, onClose, onSubmit, initialData }: Pro
         assetWardId: initialData.assetWardId || 0,
         assetProvinceId: initialData.assetProvinceId || 0,
 
-        // Flatten propertyOwner để dễ bind vào input
-        propertyOwner: initialData.propertyOwner?.map ((owner : any) => ({
+        
+        propertyOwner: (() => {
+        const ownerData = initialData.propertyOwner;
+
+        // Định nghĩa object mặc định đầy đủ các trường
+        const defaultOwner = {
+          id: '',
+          fullName: '',
+          email: '',
+          phoneNumber: '',
+          identityNumber: '',
+          organization: '',
+          userType: '',
+          taxId: ''
+        };
+
+        // Nếu không có dữ liệu -> trả về mặc định
+        if (!ownerData) return defaultOwner;
+
+        // Xử lý: Nếu là Mảng thì lấy phần tử đầu tiên, nếu là Object thì lấy chính nó
+        const owner = Array.isArray(ownerData) ? ownerData[0] : ownerData;
+
+        // Nếu data rỗng hoặc null -> trả về mặc định
+        if (!owner) return defaultOwner;
+
+        // Map đầy đủ tất cả các trường từ API vào State
+        return {
           id: owner.id || '',
           fullName: owner.fullName || '',
           email: owner.email || '',
-          phoneNumber: owner.phoneNumber || '',
+          // Quan trọng: Phải map cả các trường này thì form mới có dữ liệu
+          phoneNumber: owner.phoneNumber || '', 
           identityNumber: owner.identityNumber || '',
           organization: owner.organization || '',
           userType: owner.userType || '',
           taxId: owner.taxId || ''
-        })) || [],
+        };
+      })(),
 
         images: initialData.images?.map((img: any) => ({
           publicId: img.publicId || img.url, 
@@ -201,7 +227,7 @@ export const AuctionFormModal = ({ isOpen, onClose, onSubmit, initialData }: Pro
       e.target.value = '';
     }
   };
-
+  
   const removeImage = (indexToRemove: number) => {
     setFormData(prev => ({
       ...prev,
