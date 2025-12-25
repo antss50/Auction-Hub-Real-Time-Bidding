@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { Slider } from "@auction-hub/shacdn-ui/slider";
 import { Label } from "@auction-hub/shacdn-ui/label";
 import { RadioGroup, RadioGroupItem } from "@auction-hub/shacdn-ui/radio-group";
+import { Input } from "@auction-hub/shacdn-ui/input"; // 1. Import Input
 import {
   Select,
   SelectContent,
@@ -16,6 +17,7 @@ import { Button } from "@auction-hub/shacdn-ui/button";
 export type FilterOptions = {
   type: "now" | "upcoming" | "completed";
   priceRange: number[];
+  name: string;
   location: string;
   category: string;
 };
@@ -26,39 +28,37 @@ type AuctionFilterProps = {
 };
 
 export default function AuctionFilter({ onFilterChange, currentType }: AuctionFilterProps) {
-  // Khởi tạo state dựa trên props truyền vào
   const [selectedType, setSelectedType] = useState<"now" | "upcoming" | "completed">(currentType);
   const [priceRange, setPriceRange] = useState([0, 10000000000]);
+  const [name, setName] = useState("");
   const [location, setLocation] = useState("");
   const [category, setCategory] = useState("");
 
-  // Đồng bộ state khi URL thay đổi 
   useEffect(() => {
     setSelectedType(currentType);
   }, [currentType]);
 
-  // Hàm xử lý khi nhấn nút Tìm kiếm
   const handleSearch = () => {
     onFilterChange({
       type: selectedType,
       priceRange: priceRange,
+      name: name,
       location: location,
       category: category,
     });
   };
 
-  // Hàm xử lý khi nhấn nút Đặt lại
   const handleReset = () => {
-    // Reset về trạng thái hiện tại của URL hoặc về mặc định
     setSelectedType(currentType);
     setPriceRange([0, 10000000000]);
+    setName("");
     setLocation("");
     setCategory("");
 
-    // Gửi tín hiệu reset lên cha
     onFilterChange({
       type: currentType,
       priceRange: [0, 10000000000],
+      name: "",
       location: "",
       category: "",
     });
@@ -69,7 +69,38 @@ export default function AuctionFilter({ onFilterChange, currentType }: AuctionFi
       <h2 className="text-2xl font-bold mb-6 text-gray-800">Bộ lọc tài sản</h2>
 
       <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-        {/* Khoảng giá */}
+        
+        {/* CỘT 1: TÌM KIẾM TÊN & ĐỊA ĐIỂM (Gộp chung để tiết kiệm không gian) */}
+        <div className="flex flex-col gap-6">
+          {/* 2. Thêm Input tìm kiếm tên */}
+          <div>
+            <Label className="mb-3 block font-semibold">Tên tài sản</Label>
+            <Input
+              placeholder="Nhập tên tài sản..."
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              className="bg-white"
+            />
+          </div>
+
+          {/* Di chuyển phần Địa điểm vào đây */}
+          <div>
+            <Label className="mb-3 block font-semibold">Địa điểm</Label>
+            <Select value={location} onValueChange={setLocation}>
+              <SelectTrigger className="w-full bg-white">
+                <SelectValue placeholder="Chọn tỉnh/thành phố" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Tất cả</SelectItem>
+                <SelectItem value="Hồ Chí Minh">Hồ Chí Minh</SelectItem>
+                <SelectItem value="Hà Nội">Hà Nội</SelectItem>
+                <SelectItem value="Đà Nẵng">Đà Nẵng</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+
+        {/* CỘT 2: KHOẢNG GIÁ */}
         <div>
           <Label className="mb-3 block font-semibold">Khoảng giá</Label>
           <Slider
@@ -87,7 +118,7 @@ export default function AuctionFilter({ onFilterChange, currentType }: AuctionFi
           </div>
         </div>
 
-        {/* Thời gian đấu giá */}
+        {/* CỘT 3: THỜI GIAN ĐẤU GIÁ */}
         <div>
           <Label className="mb-3 block font-semibold">Thời gian đấu giá</Label>
           <RadioGroup
@@ -110,11 +141,11 @@ export default function AuctionFilter({ onFilterChange, currentType }: AuctionFi
           </RadioGroup>
         </div>
 
-        {/* Loại tài sản */}
+        {/* CỘT 4: LOẠI TÀI SẢN */}
         <div>
           <Label className="mb-3 block font-semibold">Loại tài sản</Label>
           <RadioGroup
-            value={category || "all"} // Nếu rỗng thì chọn 'all'
+            value={category || "all"}
             onValueChange={(val) => setCategory(val === "all" ? "" : val)}
             className="flex flex-col space-y-2"
           >
@@ -138,36 +169,18 @@ export default function AuctionFilter({ onFilterChange, currentType }: AuctionFi
               <RadioGroupItem value="state_asset" id="state_asset" />
               <Label htmlFor="state_asset" className="cursor-pointer">Tài sản nhà nước</Label>
             </div>
-            <div className="flex items-center space-x-2">
+             <div className="flex items-center space-x-2">
               <RadioGroupItem value="enforcement_asset" id="enforcement_asset" />
               <Label htmlFor="enforcement_asset" className="cursor-pointer">Tài sản thi hành án</Label>
             </div>
-            <div className="flex items-center space-x-2">
+             <div className="flex items-center space-x-2">
               <RadioGroupItem value="other_asset" id="other_asset" />
               <Label htmlFor="other_asset" className="cursor-pointer">Tài sản khác</Label>
             </div>
-            {/* Thêm các option khác nếu cần, value phải khớp với logic filter ở cha */}
           </RadioGroup>
-        </div>
-
-        {/* Địa điểm */}
-        <div>
-          <Label className="mb-3 block font-semibold">Địa điểm</Label>
-          <Select value={location} onValueChange={setLocation}>
-            <SelectTrigger className="w-full bg-white">
-              <SelectValue placeholder="Chọn tỉnh/thành phố" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Tất cả</SelectItem>
-              <SelectItem value="Hồ Chí Minh">Hồ Chí Minh</SelectItem>
-              <SelectItem value="Hà Nội">Hà Nội</SelectItem>
-              <SelectItem value="Đà Nẵng">Đà Nẵng</SelectItem>
-            </SelectContent>
-          </Select>
         </div>
       </div>
 
-      {/* Nút hành động */}
       <div className="flex gap-4 mt-8 pt-4 border-t border-gray-100">
         <Button
           className="bg-yellow-500 hover:bg-yellow-600 text-white font-bold px-8"

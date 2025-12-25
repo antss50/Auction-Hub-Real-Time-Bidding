@@ -2,7 +2,7 @@
 
 import { useEffect, useState, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
-import { Search } from "lucide-react";
+import { Search, Loader2 } from "lucide-react"; // Thêm Loader2 cho đẹp
 import apiClient from "@auction-hub/axios"; 
 import { Article } from "../../types/article";
 import Topbar from "../../components/Topbar";
@@ -21,7 +21,7 @@ function ArticlesContent() {
   const [loading, setLoading] = useState(true);
   const [totalPages, setTotalPages] = useState(1);
   
-  // Params từ URL (để giữ trạng thái khi reload)
+  // Params từ URL
   const page = Number(searchParams.get("page")) || 1;
   const search = searchParams.get("search") || "";
   const type = searchParams.get("type") || "all";
@@ -31,13 +31,25 @@ function ArticlesContent() {
     const fetchArticles = async () => {
       try {
         setLoading(true);
-        const params = {
+        
+        // --- SỬA ĐỔI TẠI ĐÂY ---
+        // Xây dựng object params động
+        const params: any = {
           page: page,
-          limit:9, 
+          limit: 9, 
           sortBy: 'createdAt',
           sortOrder: 'desc',
-          type: type === 'all' ? undefined : type
         };
+
+        // Chỉ gửi type nếu không phải là 'all'
+        if (type !== 'all') {
+            params.type = type;
+        }
+
+        // Gửi tham số tìm kiếm (Backend thường dùng 'title' cho bài viết)
+        if (search) {
+            params.title = search; 
+        }
 
         const res = await apiClient.get("/articles", { params });
 
@@ -50,16 +62,19 @@ function ArticlesContent() {
           
           setArticles(mappedData);
           setTotalPages(res.data.meta?.totalPages || 1);
+        } else {
+            setArticles([]);
         }
       } catch (error) {
         console.error("Lỗi tải tin tức:", error);
+        setArticles([]);
       } finally {
         setLoading(false);
       }
     };
 
     fetchArticles();
-  }, [searchParams]);
+  }, [searchParams]); // Chạy lại khi URL thay đổi (bao gồm cả search, page, type)
 
   const handlePageChange = (newPage: number) => {
     if (newPage >= 1 && newPage <= totalPages) {
@@ -75,9 +90,15 @@ function ArticlesContent() {
     const searchTerm = formData.get("search") as string;
     
     const params = new URLSearchParams(searchParams.toString());
-    params.set("search", searchTerm);
-    params.set("page", "1"); 
-    console.log("Search params:", params.toString());
+    
+    // Nếu có từ khóa thì set, không thì xóa để URL gọn
+    if (searchTerm) {
+        params.set("search", searchTerm);
+    } else {
+        params.delete("search");
+    }
+    
+    params.set("page", "1"); // Reset về trang 1 khi tìm kiếm
     router.push(`/articles?${params.toString()}`);
   };
 
@@ -86,7 +107,7 @@ function ArticlesContent() {
     const params = new URLSearchParams(searchParams.toString());
     params.set("type", newType);
     params.set("page", "1");
-    console.log("Filter params:", params.toString());
+    // Giữ nguyên search param hiện tại (nếu có)
     router.push(`/articles?${params.toString()}`);
   };
 
@@ -131,7 +152,7 @@ function ArticlesContent() {
                 <Input 
                     name="search" 
                     defaultValue={search} 
-                    placeholder="Tìm kiếm tin tức..." 
+                    placeholder="Tìm kiếm theo tiêu đề..." 
                     className="pl-10 pr-4 py-2 rounded-full border-gray-200 bg-gray-50 focus:bg-white transition-all"
                 />
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
@@ -140,13 +161,24 @@ function ArticlesContent() {
 
         {/* Content Grid */}
         <div className="mt-8">
-            <h1 className="text-3xl font-bold text-gray-900">Tin tức & Thông báo mới nhất</h1>
+            <div className="flex justify-between items-end mb-6">
+                <h1 className="text-3xl font-bold text-gray-900">Tin tức & Thông báo mới nhất</h1>
+                {search && <span className="text-gray-500">Kết quả tìm kiếm cho: <strong>{search}</strong></span>}
+            </div>
+
             {loading ? (
-                <div className="text-center py-20 text-gray-500">Đang tải dữ liệu...</div>
+                <div className="flex justify-center py-20">
+                    <Loader2 className="w-10 h-10 animate-spin text-gray-400"/>
+                </div>
             ) : articles.length > 0 ? (
                 <SectionGrid items={articles} />
             ) : (
-                <div className="text-center py-20 text-gray-500">Không tìm thấy bài viết nào.</div>
+                <div className="text-center py-20 bg-white rounded-xl border border-dashed">
+                    <p className="text-gray-500 text-lg">Không tìm thấy bài viết nào phù hợp.</p>
+                    <Button variant="link" onClick={() => router.push('/articles')} className="mt-2 text-[#980000]">
+                        Xóa bộ lọc
+                    </Button>
+                </div>
             )}
         </div>
 

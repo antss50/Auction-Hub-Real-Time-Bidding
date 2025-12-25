@@ -11,9 +11,9 @@ export default function Footer() {
         <div>
           <h3 className="text-lg font-bold text-white mb-3">Liên kết nhanh</h3>
           <ul className="space-y-2">
-            <li><a href="/about" className="hover:underline">Giới thiệu</a></li>
+            {/* <li><a href="/about" className="hover:underline">Giới thiệu</a></li> */}
             <li><a href="/contact" className="hover:underline">Liên hệ</a></li>
-            <li><a href="/guide" className="hover:underline">Hướng dẫn</a></li>
+            {/* <li><a href="/guide" className="hover:underline">Hướng dẫn</a></li> */}
           </ul>
         </div>
         <div>
