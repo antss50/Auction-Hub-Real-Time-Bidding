@@ -60,11 +60,11 @@ export type RegisterApiPayload = Omit<RegisterFormSchema, 'confirmPassword' | 'a
 
 // Schemas for Login
 export const loginSchema = z.object({
-  email: z.string().email("Email không hợp lệ"),
+  email: z.string().email("Vui lòng nhập email hợp lệ"),
   phone_number: z.string().optional(),
   tax_id: z.string().optional(),
   identity_number: z.string().optional(),
-  password: z.string().min(1, "Mật khẩu không được để trống"),
+  password: z.string().min(1, "Vui lòng nhập mật khẩu"),
 });
 
 export type LoginSchema = z.infer<typeof loginSchema>;

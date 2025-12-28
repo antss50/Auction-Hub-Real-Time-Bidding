@@ -27,7 +27,7 @@ export const NewsFormModal = ({ isOpen, onClose, onSubmit, initialData }: Props)
     content: '',     // Nội dung chi tiết (HTML)
     author: '',
     type: 'news',
-    image: [] as { publicId:string | null; url: string }[], 
+    image: { publicId: null, url: '' }, 
   });
 
   // --- 1. INITIALIZE DATA  ---
@@ -73,8 +73,10 @@ export const NewsFormModal = ({ isOpen, onClose, onSubmit, initialData }: Props)
       console.log("Uploaded images:", newImages);
       setFormData(prev => ({
         ...prev,
-        images: [...prev.image, ...newImages]
+        image: newImages[0]
+      
       }));
+      console.log("Form data after upload:", formData);
     } catch (error) {
       console.error("Upload failed:", error);
       toast({ title: 'Lỗi tải ảnh', description: 'Lỗi tải ảnh lên! Vui lòng thử lại.', variant: 'destructive' });
@@ -84,12 +86,12 @@ export const NewsFormModal = ({ isOpen, onClose, onSubmit, initialData }: Props)
     }
   };
 
-  const removeImage = (indexToRemove: number) => {
-    setFormData(prev => ({
-      ...prev,
-      images: prev.image.filter((_, index) => index !== indexToRemove)
-    }));
-  };
+  // const removeImage = (indexToRemove: number) => {
+  //   setFormData(prev => ({
+  //     ...prev,
+  //     images: prev.image.filter((_, index) => index !== indexToRemove)
+  //   }));
+  // };
 
   // Xử lý Submit Form
   const handleSubmit = async (e?: React.FormEvent) => {
@@ -181,16 +183,19 @@ export const NewsFormModal = ({ isOpen, onClose, onSubmit, initialData }: Props)
                     {/* Ảnh đại diện */}
                     <div className="bg-gray-50 p-5 rounded-xl border border-gray-200">
                         <label className="block font-bold text-gray-700 mb-3">Ảnh đại diện (Cover)</label>
+                        <div>
+
+                        <input 
+                            type="file" 
+                            accept="image/*" 
+                            className="w-full h-full mb-4"
+                            onChange={handleFileChange}
+                            disabled={isUploading}
+                        />
+                        </div>
                         
-                        {!formData.image ? (
+                        {!formData.image.url ? (
                             <div className="aspect-video bg-white border-2 border-dashed border-gray-300 rounded-lg flex flex-col items-center justify-center cursor-pointer hover:border-yellow-500 hover:bg-yellow-50 transition-all relative group">
-                                <input 
-                                    type="file" 
-                                    accept="image/*" 
-                                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                                    onChange={handleFileChange}
-                                    disabled={isUploading}
-                                />
                                 {isUploading ? (
                                     <div className="flex flex-col items-center text-blue-600">
                                         <Loader2 className="animate-spin mb-2" />
@@ -208,14 +213,14 @@ export const NewsFormModal = ({ isOpen, onClose, onSubmit, initialData }: Props)
                             <div className="relative aspect-video rounded-lg overflow-hidden border border-gray-200 shadow-sm group bg-white">
                                 {/* Hiển thị ảnh cover */}
                                 <img 
-                                    src={formData.images.url} 
+                                    src={formData.image.url} 
                                     alt="cover" 
                                     className="w-full h-full object-cover" 
                                     onError={(e) => {
                                         (e.target as HTMLImageElement).src = 'https://via.placeholder.com/300x200?text=Error+Loading+Image';
                                     }}
                                 />
-                                <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                                {/* <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
                                     <button 
                                         onClick={() => removeImage()}
                                         className="bg-red-500 text-white p-2 rounded-full hover:bg-red-600 transition-transform hover:scale-110"
@@ -223,7 +228,7 @@ export const NewsFormModal = ({ isOpen, onClose, onSubmit, initialData }: Props)
                                     >
                                         <Trash2 size={18} />
                                     </button>
-                                </div>
+                                </div> */}
                             </div>
                         )}
                     </div>
