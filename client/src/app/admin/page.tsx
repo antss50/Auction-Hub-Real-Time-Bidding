@@ -6,7 +6,7 @@ import {
     getDashboardAnalytics,
     refreshAnalyticsView,
 } from "../../services/admin-action.service";
-import { DashboardAnalyticsData } from "client/src/types/admin-dashboard";
+import { DashboardAnalyticsData } from "../../types/admin-dashboard";
 import {
     ComposedChart,
     Line,

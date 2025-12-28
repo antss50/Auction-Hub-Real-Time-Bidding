@@ -11,7 +11,7 @@ import Footer from "../components/Footer";
 import { AuctionItem, AuctionResponse } from "../types/auction";
 import apiClient from "@auction-hub/axios";
 import { Article } from "../types/article";
-import { formatCurrency, getImageUrl } from "./utils/format";
+import { getImageUrl } from "./utils/format";
 import Link from "next/link";
 import { useAuth } from "../contexts/AuthContext";
 

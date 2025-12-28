@@ -1,7 +1,8 @@
 import { useState, useEffect, useCallback } from 'react';
 import { AuctionService } from '../services/auction.service';
-import { AuctionDetail, AuctionItem } from '../types/auction';
+import { AuctionItem } from '../types/auction';
 import { useDebounce } from './useDebounce';
+import { useToast } from '@auction-hub/shacdn-ui/hooks/use-toast';
 
 export const useAdminAuctions = () => {
   const [auctions, setAuctions] = useState<AuctionItem[]>([]);
@@ -26,6 +27,8 @@ export const useAdminAuctions = () => {
   const [page, setPage] = useState(1);
 
   const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const { toast } = useToast();
   const [editingItem, setEditingItem] = useState<any>(null);
 
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
@@ -81,31 +84,34 @@ export const useAdminAuctions = () => {
     try {
       await AuctionService.delete(id);
       setRefreshKey(prev => prev + 1); // Reload lại list sau khi xóa
+      toast({ title: 'Xóa phiên đấu giá', description: 'Phiên đấu giá đã được xóa.' });
       return true;
     } catch (error) {
-      alert('Phiên đấu giá chỉ có thể bị xoá khi chưa diễn ra');
+      toast({ title: 'Không thể xóa phiên đấu giá', description: 'Phiên đấu giá chỉ có thể bị xoá khi chưa diễn ra', variant: 'destructive' });
       return false;
     }
-  };
+  }; 
 
   const createAuction = async (data: AuctionItem) => {
     try {
       await AuctionService.create(data);
       setRefreshKey(prev => prev + 1);
-      return true; // Trả về true để component biết mà đóng modal
+      toast({ title: 'Tạo phiên đấu giá', description: 'Tạo phiên đấu giá thành công' });
+      return true; 
     } catch (error) {
-      alert('Lỗi tạo mới');
+      toast({ title: 'Lỗi tạo mới', description: 'Không thể tạo phiên đấu giá. Vui lòng thử lại.', variant: 'destructive' });
       return false;
     }
-  };
+  }; 
 
   const updateAuction = async (id: string, data: AuctionItem) => {
     try {
       await AuctionService.update(id, data);
       setRefreshKey(prev => prev + 1);
+      toast({ title: 'Cập nhật phiên đấu giá', description: 'Cập nhật phiên đấu giá thành công' });
       return true;
     } catch (error) {
-      alert('Lỗi cập nhật');
+      toast({ title: 'Lỗi cập nhật', description: 'Không thể cập nhật phiên đấu giá. Vui lòng thử lại.', variant: 'destructive' });
       return false;
     }
   };

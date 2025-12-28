@@ -37,7 +37,7 @@ export default function Navbar() {
       <ul className="flex gap-16 text-sm font-medium">
         <li><Link href="/" className="hover:text-yellow-600">Trang chủ</Link></li>
         <li><Link href="/auctions" className="hover:text-yellow-600">Tài sản đấu giá</Link></li>
-        <li><Link href="/guide" className="hover:text-yellow-600">Hướng dẫn</Link></li>
+        {/* <li><Link href="/guide" className="hover:text-yellow-600">Hướng dẫn</Link></li> */}
         <li><Link href="/articles" className="hover:text-yellow-600">Tin tức</Link></li>
         <li><Link href="/contacts" className="hover:text-yellow-600">Liên hệ</Link></li>
       </ul>

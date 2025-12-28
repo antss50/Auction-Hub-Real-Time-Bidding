@@ -1,5 +1,7 @@
+'use client'
 import React, {useRef} from 'react';
 import { type Editor } from '@tiptap/react';
+import { useToast } from '@auction-hub/shacdn-ui/hooks/use-toast';
 import {
   Bold, Italic, List, ListOrdered, Quote,
   Heading1, Heading2, Undo, Redo, Image as ImageIcon, 
@@ -14,6 +16,7 @@ interface Props {
 
 export const EditorToolbar = ({ editor }: Props) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const { toast } = useToast();
   if (!editor) return null;
 
   const handleImageButtonClick = () => {
@@ -21,6 +24,7 @@ export const EditorToolbar = ({ editor }: Props) => {
   };
 
   // 2. Hàm xử lý khi người dùng chọn file
+
   const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
@@ -31,7 +35,7 @@ export const EditorToolbar = ({ editor }: Props) => {
     if (uploadedFiles && uploadedFiles.length > 0) {
       editor.chain().focus().setImage({ src: uploadedFiles[0].url }).run();
     } else {
-       alert("Lỗi upload ảnh! Vui lòng thử lại.");
+       toast({ title: 'Lỗi upload ảnh', description: 'Lỗi upload ảnh! Vui lòng thử lại.', variant: 'destructive' });
     }
     // Reset input để có thể chọn lại cùng 1 file nếu muốn
     if (fileInputRef.current) {

@@ -3,7 +3,7 @@ import apiClient from '@auction-hub/axios';
 export const NewsService = {
   // Lấy danh sách (có phân trang, search, sort)
   getAll: async (params?: any) => {
-    // 1. Lọc và chuẩn hóa params trước khi gửi
+    // Lọc và chuẩn hóa params trước khi gửi
     const cleanParams: any = {
       page: params?.page || 1,
       limit: params?.limit || 10,
@@ -11,13 +11,12 @@ export const NewsService = {
       sortOrder: params?.sortOrder || 'desc',
     };
 
-    // 2. Chỉ thêm 'title' nếu có giá trị
+    // Chỉ thêm 'title' nếu có giá trị
     if (params?.title) {
         cleanParams.title = params.title;
     }
 
-    // 3. Chỉ thêm 'type' nếu nó HỢP LỆ (Backend yêu cầu type cụ thể)
-    // Backend báo lỗi: type must be one of: news, auction_notice, auction_report, legal_document
+    // Chỉ thêm 'type' nếu nó HỢP LỆ (Backend yêu cầu type cụ thể)
     const validTypes = ['news', 'auction_notice', 'auction_report', 'legal_document'];
     
     if (params?.type && validTypes.includes(params.type)) {

@@ -8,6 +8,7 @@ import Topbar from "../../../components/Topbar";
 import Navbar from "../../../components/Navbar";
 import Footer from "../../../components/Footer";
 import { placeManualBid, denyBid } from '../../../services/auctionsService';
+import { AdminActionService } from '../../../services/admin-action.service'; 
 import { CountdownTimer } from '../../../components/CountdownTimer';
 import { toast } from "sonner";
 import Cookies from 'js-cookie';
@@ -93,7 +94,7 @@ export default function LiveAuctionPage() {
         const newSocket = io('https://auction-hub-kc24.onrender.com/bidding', {
             auth: { token: token },
             transports: ['websocket', 'polling'],
-            reconnection: true,
+            reconnection: true,           // Tự động kết nối lại
             reconnectionAttempts: 5,
         });
 
@@ -220,6 +221,7 @@ export default function LiveAuctionPage() {
         if (!auctionState) return;
         if (bidAmount < auctionState.nextMinimumBid) {
             toast.warning(`Giá đấu phải lớn hơn hoặc bằng ${formatCurrency(auctionState.nextMinimumBid)}`);
+            toast.error(`Giá đấu phải lớn hơn hoặc bằng ${formatCurrency(auctionState.nextMinimumBid)}`);
             return;
         }
         setIsBidding(true);

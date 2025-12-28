@@ -1,7 +1,8 @@
+/* eslint-disable @nx/enforce-module-boundaries */
 "use client";
 
 import { cn } from "@auction-hub/shacdn-utils";
-import { createClient } from "libs/supabase/Client";
+import { createClient } from "../../../libs/supabase/client";
 import {
     Button,
     Input,

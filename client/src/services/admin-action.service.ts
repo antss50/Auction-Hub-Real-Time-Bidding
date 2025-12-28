@@ -33,18 +33,22 @@ export const AdminActionService = {
   },
 
   // Get contract 
-  getContract: async (auctionId: string) => {
-    const res = await apiClient.get(`/contracts/${auctionId}`);
+  getContract: async (contractId: string) => {
+    const res = await apiClient.get(`/contracts/${contractId}?t=${new Date().getTime()}`);
     return res.data;
   },
 
+  // Download contract
   downloadContract : async (contractId: string) => {
     const res =await apiClient.get(`/contracts/${contractId}/pdf/vi`, {
       responseType: 'blob'
     })
     return res.data;
+
+  },
+
   }
-};
+;
 
 // Lấy số liệu thống kê Dashboard
 export const getDashboardAnalytics = async (params?: AnalyticsParams) => {
@@ -56,4 +60,5 @@ export const getDashboardAnalytics = async (params?: AnalyticsParams) => {
 export const refreshAnalyticsView = async () => {
     const response = await apiClient.post('/dashboard/analytics/refresh');
     return response.data;
+
 };

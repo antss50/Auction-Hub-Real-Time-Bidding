@@ -87,22 +87,18 @@ export const getAuctionResult = async (auctionId: string) => {
 
 // Lấy thông tin yêu cầu thanh toán cho winner
 export const getWinnerPaymentRequirements = async (auctionId: string) => {
-    try {
+    
         const response = await apiClient.get(`/auction-finalization/winner-payment-requirements/${auctionId}`);
         return response.data;
-    } catch (error) {
-        throw error;
-    }
+    
 };
 
 // Khởi tạo thanh toán cho winner (Winner Payment)
 export const submitWinnerPayment = async (auctionId: string) => {
-    try {
+    
         const response = await apiClient.post('/auction-finalization/submit-winner-payment', { auctionId });
         return response.data.data; // Trả về paymentUrl, qrCode, bankInfo...
-    } catch (error) {
-        throw error;
-    }
+    
 };
 
 // Xác nhận thanh toán winner
@@ -134,23 +130,19 @@ export const exportContractPdfVi = async (contractId: string) => {
 
 // Admin từ chối giá đấu gần nhất
 export const denyBid = async (bidId: string, reason: string) => {
-    try {
+   
         const response = await apiClient.post('/manual-bid/deny', {
             bidId,
             reason
         });
         return response.data;
-    } catch (error) {
-        throw error;
-    }
+    
 };
 
 // Rút hồ sơ đăng ký (Withdraw Registration)
 export const withdrawRegistration = async (data: { auctionId: string; withdrawalReason: string }) => {
-    try {
+    
         const response = await apiClient.post('/register-to-bid/withdraw', data);
         return response.data;
-    } catch (error) {
-        throw error;
-    }
+    
 };

@@ -17,7 +17,7 @@ interface Props {
   status: string;
 }
 
-export const AuctionFinalizationPanel = ({ auctionId, status, propertyOwner }: Props) => {
+export const AuctionFinalizationPanel = ({ auctionId, propertyOwner, status }: Props) => {
   // Cập nhật các Tab mới: Evaluate, History, Contract
   const [activeTab, setActiveTab] = useState<'evaluate' | 'history' | 'contract'>('evaluate');
   const [loading, setLoading] = useState(false);
@@ -25,7 +25,7 @@ export const AuctionFinalizationPanel = ({ auctionId, status, propertyOwner }: P
   const [isFinalized, setIsFinalized] = useState(false);
   const processAndFetch = async () => {
     setLoading(true);
-    // setData(null);
+    
 
     try {
         // --- BƯỚC 1: FINALIZE (Nếu cần) ---
@@ -55,10 +55,10 @@ export const AuctionFinalizationPanel = ({ auctionId, status, propertyOwner }: P
         // --- BƯỚC 2: FETCH DATA THEO TAB ---
         if (currentFinalizedState) {
             let res;
+            
             if (activeTab === 'evaluate') {
                 res = await AdminActionService.evaluateAuction(auctionId);
             } else if (activeTab === 'history') {
-                // Tab Lịch sử dùng API Results để lấy thông tin đấu giá chi tiết
                 res = await AdminActionService.getResults(auctionId);
             } else if (activeTab === 'contract') {
                 // 1. Lấy thông tin kết quả để có ContractID
@@ -80,22 +80,24 @@ export const AuctionFinalizationPanel = ({ auctionId, status, propertyOwner }: P
             }
 
             if (res && res.success) {
+                console.log("Fetched Data for tab", activeTab, ":", res.data); // Debug tổng quát
                 setData(res.data);
             }
         }
 
     } catch (error) {
         console.error("Error in admin panel:", error);
+        setData(null);
     } finally {
         setLoading(false);
     }
-  };
+};
 
   useEffect(() => {
     if (auctionId) processAndFetch();
   }, [auctionId, activeTab]);
 
-   const handleDownloadPdf = async () => {
+  const handleDownloadPdf = async () => {
     if (!data || !data.id) return;
     
     setLoading(true);
@@ -316,121 +318,110 @@ export const AuctionFinalizationPanel = ({ auctionId, status, propertyOwner }: P
                 )}
 
                 {/* === TAB 3: CONTRACT (HỢP ĐỒNG) === */}
+                {/* === TAB 3: CONTRACT (HỢP ĐỒNG) === */}
                 {activeTab === 'contract' && (
-    <div className="animate-in fade-in space-y-6">
-        {data && data.id ? (
-            <div className="max-w-3xl mx-auto">
-                {/* Contract Card Container */}
-                <div className="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
+                    <div className="animate-in fade-in space-y-6">
+                        {data && data.id ? (
+                            <div className="max-w-3xl mx-auto">
+                                {/* Contract Card Container */}
+                                <div className="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
                     
-                    {/* 1. Header Card: ID & Trạng thái */}
-                    <div className="bg-gray-50 px-6 py-4 border-b border-gray-200 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                        <div className="flex items-center gap-3">
-                            <div className="bg-blue-100 p-2 rounded-lg text-blue-600">
-                                <FileSignature size={24} />
-                            </div>
-                            <div>
-                                <h4 className="font-bold text-gray-900">Hợp đồng Mua bán Tài sản</h4>
-                                <p className="text-xs text-gray-500 font-mono">ID: {data.id}</p>
-                            </div>
-                        </div>
-                        
-                        {/* Status Badge */}
-                        <div className={`px-4 py-1.5 rounded-full text-sm font-bold border flex items-center gap-2 ${
-                            data.status === 'signed' 
-                            ? 'bg-green-50 text-green-700 border-green-200' 
-                            : 'bg-yellow-50 text-yellow-700 border-yellow-200'
-                        }`}>
-                            <span className={`w-2 h-2 rounded-full ${data.status === 'signed' ? 'bg-green-600' : 'bg-yellow-600'}`}></span>
-                            {data.status === 'signed' ? "Đã kí kết" : "Chờ thanh toán"}
-                        </div>
-                    </div>
-
-                    {/* 2. Body Card: Thông tin chi tiết */}
-                    <div className="p-8">
-                        
-                        {/* Tên cuộc đấu giá & Giá trị */}
-                        <div className="mb-8 text-center pb-8 border-b border-dashed border-gray-200">
-                            <p className="text-sm text-gray-500 uppercase tracking-wide mb-1">Tài sản đấu giá</p>
-                            <h3 className="text-xl font-bold text-gray-900 mb-4">{data.auctionName}</h3>
-                            
-                            <div className="inline-block bg-rose-50 px-6 py-3 rounded-xl border border-rose-100">
-                                <p className="text-xs text-rose-600 font-bold uppercase mb-1">Giá trị hợp đồng</p>
-                                <p className="text-3xl font-bold text-rose-700">
-                                    {formatCurrency(Number(data.price))}
-                                </p>
-                            </div>
-                        </div>
-
-                        {/* Thông tin 2 bên: Bán & Mua */}
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                            
-                            {/* Bên A: Người Bán */}
-                            <div className="space-y-3">
-                                <h5 className="font-bold text-gray-800 border-b pb-2 flex items-center gap-2">
-                                    <span className="bg-gray-200 text-xs px-2 py-0.5 rounded text-gray-700">Bên A</span>
-                                    Chủ sở hữu tài sản
-                                </h5>
-                                <div className="space-y-2 text-sm">
-                                    <div>
-                                        <p className="text-gray-500 text-xs">Họ và tên</p>
-                                        <p className="font-medium text-gray-900">{propertyOwner?.fullName || "Chưa cập nhật"}</p>
+                                {/* 1. Header Card: ID & Trạng thái */}
+                                <div className="bg-gray-50 px-6 py-4 border-b border-gray-200 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                                    <div className="flex items-center gap-3">
+                                        <div className="bg-blue-100 p-2 rounded-lg text-blue-600">
+                                            <FileSignature size={24} />
+                                        </div>
+                                        <div>
+                                            <h4 className="font-bold text-gray-900">Hợp đồng Mua bán Tài sản</h4>
+                                            <p className="text-xs text-gray-500 font-mono">ID: {data.id}</p>
+                                        </div>
                                     </div>
-                                    <div>
-                                        <p className="text-gray-500 text-xs">Số CCCD</p>
-                                        <p className="font-mono text-xs text-gray-600 truncate bg-gray-50 p-1 rounded">
-                                            {data.sellerIdentityNumber || "N/A"}
-                                        </p>
-                                    </div>
+                        
+                                    {/* Status Badge */}
+                                    <div className={`px-4 py-1.5 rounded-full text-sm font-bold border flex items-center gap-2 ${
+                                        data.status === 'signed' ? 'bg-green-50 text-green-700 border-green-200' : 'bg-yellow-50 text-yellow-700 border-yellow-200'
+                                    }`}>
+                                        <span className={`w-2 h-2 rounded-full ${data.status === 'signed' ? 'bg-green-600' : 'bg-yellow-600'}`}></span>
+                                        {data.status === 'signed' ? "Đã kí kết" : "Chờ thanh toán"}
                                 </div>
                             </div>
 
-                            {/* Bên B: Người Mua */}
-                            <div className="space-y-3">
-                                <h5 className="font-bold text-gray-800 border-b pb-2 flex items-center gap-2">
-                                    <span className="bg-gray-200 text-xs px-2 py-0.5 rounded text-gray-700">Bên B</span>
-                                    Người trúng đấu giá
-                                </h5>
-                                <div className="space-y-2 text-sm">
-                                    <div>
-                                        <p className="text-gray-500 text-xs">Họ và tên</p>
-                                        <p className="font-medium text-gray-900">{data.buyerName || data.buyerFullName || "Chưa cập nhật"}</p>
+                        {/* 2. Body Card: Thông tin chi tiết */}
+                        <div className="p-8">
+                        
+                            {/* Tên cuộc đấu giá & Giá trị */}
+                            <div className="mb-8 text-center pb-8 border-b border-dashed border-gray-200">
+                                <p className="text-sm text-gray-500 uppercase tracking-wide mb-1">Tài sản đấu giá</p>
+                                <h3 className="text-xl font-bold text-gray-900 mb-4">{data.auctionName}</h3>
+                            
+                                <div className="inline-block bg-rose-50 px-6 py-3 rounded-xl border border-rose-100">
+                                    <p className="text-xs text-rose-600 font-bold uppercase mb-1">Giá trị hợp đồng</p>
+                                        <p className="text-3xl font-bold text-rose-700">{formatCurrency(Number(data.price))}</p>
+                                </div>
+                            </div>
+
+                            {/* Thông tin 2 bên: Bán & Mua */}
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                            
+                                {/* Bên A: Người Bán */}
+                                <div className="space-y-3">
+                                    <h5 className="font-bold text-gray-800 border-b pb-2 flex items-center gap-2">
+                                        <span className="bg-gray-200 text-xs px-2 py-0.5 rounded text-gray-700">Bên A</span>
+                                        Chủ sở hữu tài sản
+                                    </h5>
+                                    <div className="space-y-2 text-sm">
+                                        <div>
+                                            <p className="text-gray-500 text-xs">Họ và tên</p>
+                                            <p className="font-medium text-gray-900">{propertyOwner?.fullName || "Chưa cập nhật"}</p>
+                                        </div>
+                                        <div>
+                                            <p className="text-gray-500 text-xs">Số CCCD</p>
+                                            <p className="font-mono text-xs text-gray-600 truncate bg-gray-50 p-1 rounded">{data.sellerIdentityNumber || "N/A"}</p>
+                                        </div>
                                     </div>
-                                    <div>
-                                        <p className="text-gray-500 text-xs">Mã định danh</p>
-                                        <p className="font-mono text-xs text-gray-600 truncate bg-gray-50 p-1 rounded">
-                                            {data.buyerIdentityNumber || "N/A"}
-                                        </p>
+                                </div>
+
+                                {/* Bên B: Người Mua */}
+                                <div className="space-y-3">
+                                    <h5 className="font-bold text-gray-800 border-b pb-2 flex items-center gap-2">
+                                        <span className="bg-gray-200 text-xs px-2 py-0.5 rounded text-gray-700">Bên B</span>
+                                        Người trúng đấu giá
+                                    </h5>
+                                    <div className="space-y-2 text-sm">
+                                        <div>
+                                            <p className="text-gray-500 text-xs">Họ và tên</p>
+                                            <p className="font-medium text-gray-900">{data.buyerName || data.buyerFullName || "Chưa cập nhật"}</p>
+                                        </div>
+                                        <div>
+                                            <p className="text-gray-500 text-xs">Mã định danh</p>
+                                            <p className="font-mono text-xs text-gray-600 truncate bg-gray-50 p-1 rounded">{data.buyerIdentityNumber || "N/A"}</p>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
 
-                    {/* 3. Footer Card: Metadata & Action */}
-                    <div className="bg-gray-50 px-6 py-4 border-t border-gray-200 flex justify-between items-center text-xs text-gray-500">
-                        <div className="flex gap-4">
-                            <span>Ngày tạo: <span className="font-medium text-gray-700">{new Date(data.createdAt).toLocaleString('vi-VN')}</span></span>
-                            {data.updatedAt && (
-                                <span>Cập nhật lần cuối: <span className="font-medium text-gray-700">{new Date(data.updatedAt).toLocaleString('vi-VN')}</span></span>
-                            )}
+                        {/* 3. Footer Card: Metadata & Action */}
+                        <div className="bg-gray-50 px-6 py-4 border-t border-gray-200 flex justify-between items-center text-xs text-gray-500">
+                            <div className="flex gap-4">
+                                <span>Ngày tạo: <span className="font-medium text-gray-700">{new Date(data.createdAt).toLocaleString('vi-VN')}</span></span>
+                                {data.updatedAt && (
+                                    <span>Cập nhật lần cuối: <span className="font-medium text-gray-700">{new Date(data.updatedAt).toLocaleString('vi-VN')}</span></span>
+                                )}
+                            </div>
+                            {/* Nút hành động giả lập (ví dụ tải PDF) */}
+                            <button
+                                onClick={handleDownloadPdf}
+                                disabled={loading}
+                                className="text-blue-600 hover:underline font-medium hover:text-blue-800 transition-colors">
+                                {loading ? ( <Loader2 size={16} className="animate-spin" />) : (<Download size={16} />)}
+                                {loading ? "Đang tải..." : "Tải về bản PDF"}
+                            </button>
                         </div>
-                        {/* Nút hành động giả lập (ví dụ tải PDF) */}
-                        <button
-                          onClick={handleDownloadPdf}
-                          disabled={loading}
-                         className="text-blue-600 hover:underline font-medium hover:text-blue-800 transition-colors">
-                            {loading ? (
-            <Loader2 size={16} className="animate-spin" />
-        ) : (
-            <Download size={16} />
-        )}
-        {loading ? "Đang tải..." : "Tải về bản PDF"}
-                        </button>
                     </div>
                 </div>
-            </div>
-        ) : (
+            ) : (
             <div className="flex flex-col items-center justify-center py-16 text-center">
                 <div className="bg-gray-100 p-6 rounded-full mb-4">
                     <FileSignature size={48} className="text-gray-300" />

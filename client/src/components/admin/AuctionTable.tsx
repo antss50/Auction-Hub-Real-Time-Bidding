@@ -1,11 +1,11 @@
 import React from 'react';
 import { Edit, Trash2, Loader2, ChevronRight, ChevronLeft, Eye } from 'lucide-react';
-import { AuctionDetail, AuctionItem, ApiAuctionItem } from '../../types/auction'; 
+import { AuctionDetail, AuctionItem } from '../../types/auction'; 
 import { formatCurrency, getImageUrl } from '../../app/utils/format'; 
 import Image from 'next/image';
 
 interface Props {
-  auctions: ApiAuctionItem[];
+  auctions: AuctionItem[];
   loading: boolean;
   pagination: {
     page: number;
@@ -13,9 +13,9 @@ interface Props {
     totalItems: number;
     setPage: (page: number) => void;
   };
-  onEdit: (id: ApiAuctionItem) => void;
+  onEdit: (id: AuctionItem) => void;
   onDelete: (id: string) => void;
-  onViewDetail: (item: ApiAuctionItem) => void;
+  onViewDetail: (item: AuctionItem) => void;
 }
 
 export const AuctionsTable = ({ auctions, loading, onEdit, onDelete, pagination, onViewDetail }: Props) => {

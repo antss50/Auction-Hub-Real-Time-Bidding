@@ -9,15 +9,15 @@ import Navbar from "../../components/Navbar";
 import Footer from "../../components/Footer";
 import SectionGrid from "../../components/SectionGrid";
 import Link from "next/link";
-import { Home } from "lucide-react";
-import AuctionFilter from "../../components/AuctionFilter";
+import { Home, Loader2 } from "lucide-react";
+import AuctionFilter, { FilterOptions } from "../../components/AuctionFilter";
 import apiClient from "@auction-hub/axios";
-import { getImageUrl } from "../utils/format";
 import { Button } from "@auction-hub/shacdn-ui/button";
 
 const PAGE_SIZE = 12;
 const DOTS = "...";
 
+// --- Helper Functions (Giữ nguyên) ---
 const range = (start: number, end: number) =>
   Array.from({ length: Math.max(0, end - start + 1) }, (_, i) => start + i);
 
@@ -66,20 +66,28 @@ function getPaginationItems({
   return items.filter((v, i, arr) => i === 0 || v !== arr[i - 1]);
 }
 
-
 function AuctionsContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  const statusParam = searchParams.get("type") as "now" | "upcoming" | "completed" | null;
+  // 1. Lấy tất cả params từ URL
+  const statusParam = (searchParams.get("type") as "now" | "upcoming" | "completed") || "now";
   const pageParam = Number(searchParams.get("page") || 1);
+  const nameParam = searchParams.get("name") || "";
+  const locationParam = searchParams.get("location") || "";
+  const categoryParam = searchParams.get("category") || "";
+  
+  // Params giá (để lọc client-side)
+  const minPriceParam = Number(searchParams.get("minPrice") || 0);
+  const maxPriceParam = Number(searchParams.get("maxPrice") || 9999999999999);
 
   const [page, setPage] = useState(pageParam);
   const [totalPages, setTotalPages] = useState(1);
-
   const [auctions, setAuctions] = useState<AuctionItem[]>([]);
+  const [loading, setLoading] = useState(false);
 
-  const [priceRange, setPriceRange] = useState<[number, number]>([0, 9999999999999]);
+  // State khoảng giá để lọc ở Client
+  const [priceRange, setPriceRange] = useState<[number, number]>([minPriceParam, maxPriceParam]);
 
   const mapAuction = (item: AuctionItem): AuctionItem => ({
     id: item.id,
@@ -98,58 +106,83 @@ function AuctionsContent() {
   });
 
   const fetchAuctions = async () => {
+    setLoading(true);
     try {
-      const params = {
-        page,
+      // 2. Cấu hình params gửi API (chỉ gửi những gì Backend hỗ trợ)
+      const params: any = {
+        page: pageParam,
         limit: PAGE_SIZE,
         sortBy: "createdAt",
         sortOrder: "desc",
       };
 
+      if (statusParam) params.status = statusParam;
+      if (nameParam) params.name = nameParam;
+      
+      // Backend dùng 'auctionType' thay vì 'assetType'
+      if (categoryParam && categoryParam !== 'all') {
+          params.auctionType = categoryParam; 
+      }
+
+      // Lưu ý: Location tạm thời chưa gửi vì Backend cần ID (int) nhưng Filter gửi String
+      // Lưu ý: MinPrice/MaxPrice chưa gửi vì Backend chưa hỗ trợ
 
       const res = await apiClient.get("/auctions", { params });
 
       if (res.data?.success) {
         setTotalPages(res.data.meta?.totalPages || 1);
         const raw: AuctionItem[] = res.data.data || [];
-
         setAuctions(raw.map(mapAuction));
-        console.log(auctions)
-
-
+      } else {
+        setAuctions([]);
+        setTotalPages(1);
       }
     } catch (err) {
       console.error("Fetch auctions error:", err);
+      setAuctions([]);
+    } finally {
+      setLoading(false);
     }
   };
 
   useEffect(() => {
+    // Sync state từ URL khi URL thay đổi (F5 hoặc Back/Forward)
+    setPage(pageParam);
+    if (searchParams.has("minPrice")) {
+        setPriceRange([minPriceParam, maxPriceParam]);
+    }
     fetchAuctions();
-  }, [statusParam, page]);
+  }, [searchParams]); // Dependency là searchParams để bắt mọi thay đổi trên URL
 
+  // 3. Lọc giá ở Client (Workaround)
   const filteredAuctions = auctions.filter(
     (a) => a.startingPrice >= priceRange[0] && a.startingPrice <= priceRange[1]
   );
 
-  const handleFilterChange = (newFilters: any) => {
-    if (newFilters.type) {
-      router.push(`/auctions?type=${newFilters.type}&page=1`);
-      setPage(1);
-    }
+  // 4. Update URL khi bấm "Tìm kiếm"
+  const handleFilterChange = (newFilters: FilterOptions) => {
+    const params = new URLSearchParams();
 
-    if (newFilters.priceRange) {
-      setPriceRange(newFilters.priceRange);
-    }
+    if (newFilters.type) params.set("type", newFilters.type);
+    if (newFilters.name) params.set("name", newFilters.name);
+    if (newFilters.location && newFilters.location !== "all") params.set("location", newFilters.location);
+    if (newFilters.category && newFilters.category !== "all") params.set("category", newFilters.category);
+    
+    // Lưu giá lên URL
+    params.set("minPrice", newFilters.priceRange[0].toString());
+    params.set("maxPrice", newFilters.priceRange[1].toString());
+
+    // Reset về trang 1
+    params.set("page", "1");
+
+    router.push(`/auctions?${params.toString()}`);
   };
 
   const handlePageChange = (newPage: number) => {
-    setPage(newPage);
-
-    const query = statusParam
-      ? `?type=${statusParam}&page=${newPage}`
-      : `?page=${newPage}`;
-
-    router.push("/auctions" + query);
+    // Giữ nguyên các params hiện tại, chỉ đổi page
+    const currentParams = new URLSearchParams(searchParams.toString());
+    currentParams.set("page", newPage.toString());
+    router.push(`/auctions?${currentParams.toString()}`);
   };
 
   return (
@@ -183,12 +216,17 @@ function AuctionsContent() {
                 ? "Đã kết thúc"
                 : "Tất cả tài sản đấu giá"}
         </h3>
-
-        {filteredAuctions.length > 0 ? (
+        
+        {/* Hiển thị Loading hoặc Dữ liệu */}
+        {loading ? (
+             <div className="flex justify-center py-20">
+                <Loader2 className="animate-spin w-10 h-10 text-gray-400" />
+             </div>
+        ) : filteredAuctions.length > 0 ? (
           <>
             <SectionGrid items={filteredAuctions} />
 
-            {/* Pagination (UI giống #1, logic giữ nguyên) */}
+            {/* Pagination */}
             {totalPages > 1 && (
               <div className="flex justify-center items-center gap-2 mt-12 mb-8">
                 <Button

@@ -4,8 +4,9 @@ import { useSearchParams } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@auction-hub/shacdn-ui/card";
 import { Button } from "@auction-hub/shacdn-ui/button";
 import Link from "next/link";
+import { Suspense } from "react";
 
-export default function RegisterSuccessPage() {
+function RegisterSuccessContent() {
     const searchParams = useSearchParams();
     const email = searchParams.get("email") || "email của bạn";
 
@@ -33,3 +34,13 @@ export default function RegisterSuccessPage() {
   );
 }
 
+export default function RegisterSuccessPage() {
+  return (
+    // Wrap trong Suspense để tránh lỗi de-opt build trong Next.js
+    <div className="flex h-screen w-full items-center justify-center bg-background px-4">
+        <Suspense fallback={<div className="text-center">Đang tải...</div>}>
+            <RegisterSuccessContent />
+        </Suspense>
+    </div>
+  );
+}
