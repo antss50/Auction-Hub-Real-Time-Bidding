@@ -15,7 +15,6 @@ export default function Sidebar({ sidebarOpen }: { sidebarOpen: boolean }) {
         <NavItem href="/admin" icon={<LayoutDashboard size={20} />} label="Trang chủ" isOpen={sidebarOpen} className="active:bg-[#FFC107]" />
         <NavItem href="/admin/auctions" icon={<Gavel size={20} />} label="Quản lý Tài sản" isOpen={sidebarOpen} className="active:bg-[#FFC107]" />
         <NavItem href="/admin/articles" icon={<Users size={20} />} label="Tin tức" isOpen={sidebarOpen} className="active:bg-[#FFC107]" />
-        <NavItem href="/admin/settings" icon={<Settings size={20} />} label="Cài đặt hệ thống" isOpen={sidebarOpen} className="active:bg-[#FFC107]" />
         <NavItem href="/admin/registration" icon={<Users size={20} />} label="Quản lý trạng thái" isOpen={sidebarOpen} className="active:bg-[#FFC107]" />
       </nav>
 

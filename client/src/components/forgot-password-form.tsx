@@ -1,8 +1,7 @@
-/* eslint-disable @nx/enforce-module-boundaries */
 "use client";
 
 import { cn } from "@auction-hub/shacdn-utils";
-import { createClient } from "../../../libs/supabase/client";
+import { createClient } from "libs/supabase/Client";
 import {
     Button,
     Input,
@@ -63,10 +62,9 @@ export function ForgotPasswordForm({
             ) : (
                 <Card>
                     <CardHeader>
-                        <CardTitle className="text-2xl">Reset Your Password</CardTitle>
+                        <CardTitle className="text-2xl">Đặt lại mật khẩu của bạn</CardTitle>
                         <CardDescription>
-                            Type in your email and we&apos;ll send you a link to reset your
-                            password
+                            Nhập địa chỉ email của bạn và chúng tôi sẽ gửi cho bạn một đường dẫn để đặt lại mật khẩu.
                         </CardDescription>
                     </CardHeader>
                     <CardContent>
@@ -84,17 +82,21 @@ export function ForgotPasswordForm({
                                     />
                                 </div>
                                 {error && <p className="text-sm text-red-500">{error}</p>}
-                                <Button type="submit" className="w-full" disabled={isLoading}>
-                                    {isLoading ? "Sending..." : "Send reset email"}
+                                <Button
+                                    type="submit"
+                                    disabled={isLoading}
+                                    className="w-full bg-red-800 hover:bg-red-900 text-white"
+                                >
+                                    {isLoading ? "Đang gửi..." : "Gửi email đặt lại"}
                                 </Button>
                             </div>
                             <div className="mt-4 text-center text-sm">
-                                Already have an account?{" "}
+                                Bạn đã có tài khoản?{" "}
                                 <Link
                                     href="/auth/login"
                                     className="underline underline-offset-4"
                                 >
-                                    Login
+                                    Đăng nhập
                                 </Link>
                             </div>
                         </form>
